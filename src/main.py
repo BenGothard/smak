@@ -3,6 +3,7 @@
 import pygame
 from player import Player
 from enemy import Enemy
+from projectile import Projectile
 
 
 class Game:
@@ -18,6 +19,8 @@ class Game:
         self.running = True
         self.player = Player(400, 300)
         self.enemies = [Enemy(100, 100)]
+        # List to hold active projectiles
+        self.projectiles = []
 
     def handle_events(self):
         """Process incoming events."""
@@ -25,6 +28,9 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                x, y = self.player.rect.center
+                self.projectiles.append(Projectile(x, y, 1, 0))
 
     def run(self):
         """Main game loop."""
@@ -37,6 +43,20 @@ class Game:
             for e in self.enemies:
                 e.update(self.player.rect)
                 e.draw(self.screen)
+            for p in self.projectiles[:]:
+                p.update()
+                p.draw(self.screen)
+                if p.off_screen(800, 600):
+                    self.projectiles.remove(p)
+                    continue
+                for e in self.enemies[:]:
+                    if p.rect.colliderect(e.rect):
+                        e.health -= 1
+                        if p in self.projectiles:
+                            self.projectiles.remove(p)
+                        if e.health <= 0:
+                            self.enemies.remove(e)
+                        break
             pygame.display.flip()
             self.clock.tick(60)
         # Clean shutdown when the loop exits.
