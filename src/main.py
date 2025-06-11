@@ -2,6 +2,7 @@
 
 import pygame
 from player import Player
+from enemy import Enemy
 
 
 class Game:
@@ -16,6 +17,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
         self.player = Player(400, 300)
+        self.enemies = [Enemy(100, 100)]
 
     def handle_events(self):
         """Process incoming events."""
@@ -32,6 +34,9 @@ class Game:
             self.screen.fill((0, 0, 0))
             self.player.update()
             self.player.draw(self.screen)
+            for e in self.enemies:
+                e.update(self.player.rect)
+                e.draw(self.screen)
             pygame.display.flip()
             self.clock.tick(60)
         # Clean shutdown when the loop exits.
