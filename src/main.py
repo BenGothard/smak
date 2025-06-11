@@ -1,6 +1,7 @@
 """Main entry point for the SMaK game."""
 
 import pygame
+from player import Player
 
 
 class Game:
@@ -14,6 +15,7 @@ class Game:
         pygame.display.set_caption("SMaK")
         self.clock = pygame.time.Clock()
         self.running = True
+        self.player = Player(400, 300)
 
     def handle_events(self):
         """Process incoming events."""
@@ -28,6 +30,8 @@ class Game:
             # Poll events and update the screen every frame.
             self.handle_events()
             self.screen.fill((0, 0, 0))
+            self.player.update()
+            self.player.draw(self.screen)
             pygame.display.flip()
             self.clock.tick(60)
         # Clean shutdown when the loop exits.
