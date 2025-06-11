@@ -10,6 +10,8 @@ class Enemy:
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
         self.speed = 2
+        # Amount of damage the enemy can take before being destroyed
+        self.health = 3
 
     def update(self, player_rect: pygame.Rect) -> None:
         """Move horizontally toward the player's x-position."""
