@@ -1,0 +1,15 @@
+{
+  "name": "smak-web",
+  "version": "1.0.0",
+  "description": "Phaser 3 web build of smak",
+  "scripts": {
+    "start": "http-server -c-1 -a localhost -p 8080 ./static",
+    "build": "rm -rf docs && cp -r static docs && touch docs/.nojekyll"
+  },
+  "dependencies": {
+    "phaser": "^3.70.0"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
