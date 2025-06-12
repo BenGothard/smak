@@ -17,9 +17,22 @@
       background-position: center;
     }
     canvas { display: block; }
+    #ui {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      display: flex;
+      gap: 10px;
+      z-index: 1;
+    }
   </style>
 </head>
 <body>
+  <div id="ui">
+    <button id="startBtn">Start</button>
+    <button id="pauseBtn">Pause</button>
+    <button id="restartBtn">Restart</button>
+  </div>
   <canvas id="gameCanvas"></canvas>
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.js"></script>
   <script src="js/main.js"></script>
