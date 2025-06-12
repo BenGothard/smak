@@ -75,7 +75,8 @@ class Game:
                         if p in self.projectiles:
                             self.projectiles.remove(p)
                         if isinstance(t, Enemy) and t.health <= 0:
-                            self.enemies.remove(t)
+                            if t in self.enemies:
+                                self.enemies.remove(t)
                         elif isinstance(t, Player) and t.health <= 0:
                             self.running = False
                         break
