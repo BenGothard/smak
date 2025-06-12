@@ -27,6 +27,9 @@ class Boot extends Phaser.Scene {
   }
 }
 
+const GAME_WIDTH = 1024;
+const GAME_HEIGHT = 768;
+
 class Play extends Phaser.Scene {
   constructor() {
     super('Play');
@@ -44,7 +47,7 @@ class Play extends Phaser.Scene {
       space: Phaser.Input.Keyboard.KeyCodes.SPACE,
     });
 
-    this.player = this.physics.add.sprite(400, 300, 'player');
+    this.player = this.physics.add.sprite(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'player');
     this.player.setCollideWorldBounds(true);
 
     this.enemy = this.physics.add.sprite(100, 100, 'enemy');
@@ -113,7 +116,7 @@ class Play extends Phaser.Scene {
     }
 
     this.projectiles.children.each((b) => {
-      if (b.x > 800 || b.x < 0 || b.y > 600 || b.y < 0) {
+      if (b.x > GAME_WIDTH || b.x < 0 || b.y > GAME_HEIGHT || b.y < 0) {
         b.destroy();
       }
     }, this);
@@ -122,8 +125,8 @@ class Play extends Phaser.Scene {
 
 const config = {
   type: Phaser.CANVAS,
-  width: 800,
-  height: 600,
+  width: GAME_WIDTH,
+  height: GAME_HEIGHT,
   canvas: document.getElementById('gameCanvas'),
   physics: {
     default: 'arcade',
