@@ -24,12 +24,14 @@ SMaK is an open source arcade shooter written in Python with a Phaser 3 web port
    npm start
    ```
 3. Open `http://localhost:8080` in your browser.
-4. Build the static site (optional):
+4. Build the static site (required for GitHub Pages):
    ```bash
    npm run build
    ```
 
-The contents of the `docs/` folder can be served via GitHub Pages. A live demo will be available at:
+This generates a `docs/` directory containing the static site. Commit this
+folder to your repository and enable **GitHub Pages** to serve from the `docs/`
+folder. The game will then be playable at:
 
 <https://YOUR_GITHUB_USERNAME.github.io/smak>
 
