@@ -24,13 +24,13 @@ jobs:
           pip install flake8 pytest mypy
 
       - name: Run flake8
-        run: flake8 src
+        run: flake8 src/
 
       - name: Run pytest
         run: pytest
 
       - name: Run mypy
-        run: mypy src
+        run: mypy
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -41,7 +41,7 @@ jobs:
         run: npm ci
 
       - name: Run ESLint
-        run: npx eslint .
+        run: npm run lint:js
 
       - name: Run Jest
         run: npx jest --ci --passWithNoTests
