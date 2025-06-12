@@ -5,9 +5,9 @@ SMaK is an open source arcade shooter written in Python with a Phaser 3 web port
 ## Getting Started
 
 ### Python / Pygame Prototype
-1. Install Python 3 and Pygame:
+1. Install Python 3 and the required dependencies:
    ```bash
-   pip install pygame
+   pip install -r requirements.txt
    ```
 2. Launch the prototype:
    ```bash
