@@ -5,13 +5,14 @@
   "scripts": {
     "start": "http-server -c-1 -a localhost -p 8080 ./static",
     "build": "rm -rf docs && cp -r static docs && touch docs/.nojekyll",
-    "lint:js": "eslint js/",
+    "lint:js": "eslint static/js --ext .js,.jsx",
     "lint:py": "flake8 src/"
   },
   "dependencies": {
     "phaser": "^3.70.0"
   },
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "eslint": "^8.57.0"
   }
 }
