@@ -35,7 +35,14 @@ class Play extends Phaser.Scene {
   }
   create() {
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.space = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+    this.keys = this.input.keyboard.addKeys({
+      up: Phaser.Input.Keyboard.KeyCodes.W,
+      down: Phaser.Input.Keyboard.KeyCodes.S,
+      left: Phaser.Input.Keyboard.KeyCodes.A,
+      right: Phaser.Input.Keyboard.KeyCodes.D,
+      shift: Phaser.Input.Keyboard.KeyCodes.SHIFT,
+      space: Phaser.Input.Keyboard.KeyCodes.SPACE,
+    });
 
     this.player = this.physics.add.sprite(400, 300, 'player');
     this.player.setCollideWorldBounds(true);
@@ -55,17 +62,44 @@ class Play extends Phaser.Scene {
     }
   }
   update() {
-    if (this.cursors.left.isDown) {
-      this.player.setVelocityX(-160);
-    } else if (this.cursors.right.isDown) {
-      this.player.setVelocityX(160);
-    } else {
-      this.player.setVelocityX(0);
+    const moveLeft = this.cursors.left.isDown || this.keys.left.isDown;
+    const moveRight = this.cursors.right.isDown || this.keys.right.isDown;
+    const moveUp = this.cursors.up.isDown || this.keys.up.isDown;
+    const moveDown = this.cursors.down.isDown || this.keys.down.isDown;
+
+    let vx = 0;
+    let vy = 0;
+    if (moveLeft) vx -= 160;
+    if (moveRight) vx += 160;
+    if (moveUp) vy -= 160;
+    if (moveDown) vy += 160;
+    this.player.setVelocity(vx, vy);
+
+    if (Phaser.Input.Keyboard.JustDown(this.keys.space)) {
+      const range = 40;
+      if (
+        this.enemy.active &&
+        Phaser.Math.Distance.Between(
+          this.player.x,
+          this.player.y,
+          this.enemy.x,
+          this.enemy.y,
+        ) < range
+      ) {
+        this.hitEnemy({ destroy: () => {} }, this.enemy);
+      }
     }
 
-    if (Phaser.Input.Keyboard.JustDown(this.space)) {
+    if (Phaser.Input.Keyboard.JustDown(this.keys.shift)) {
+      const pointer = this.input.activePointer;
+      const angle = Phaser.Math.Angle.Between(
+        this.player.x,
+        this.player.y,
+        pointer.worldX,
+        pointer.worldY,
+      );
       const bullet = this.projectiles.create(this.player.x, this.player.y, 'projectile');
-      bullet.setVelocityX(300);
+      bullet.setVelocity(Math.cos(angle) * 300, Math.sin(angle) * 300);
     }
 
     if (this.enemy.active) {
