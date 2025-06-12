@@ -21,7 +21,7 @@ class Game:
         self.player = Player(400, 300)
         # Spawn several enemies at random positions
         self.enemies = [
-            Enemy(random.randint(50, 750), random.randint(50, 550)) for _ in range(4)
+            Enemy(random.randint(50, 750), random.randint(50, 550)) for _ in range(6)
         ]
         # List to hold active projectiles
         self.projectiles = []
@@ -51,8 +51,7 @@ class Game:
             self.player.draw(self.screen)
             for e in self.enemies:
                 others = [self.player] + [o for o in self.enemies if o is not e]
-                target_rects = [t.rect for t in others]
-                e.update(target_rects, self.projectiles)
+                e.update(others, self.projectiles)
                 e.draw(self.screen)
             for p in self.projectiles[:]:
                 p.update()
