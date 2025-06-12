@@ -65,7 +65,7 @@ class Play extends Phaser.Scene {
     this.physics.add.overlap(this.projectiles, this.player, this.hitPlayer, null, this);
   }
   hitEnemy(bullet, enemy) {
-    if (bullet.owner === enemy) return;
+    if (bullet.getData('owner') === enemy) return;
     bullet.destroy();
     enemy.health -= 1;
     if (enemy.health <= 0) {
@@ -73,7 +73,7 @@ class Play extends Phaser.Scene {
     }
   }
   hitPlayer(bullet, player) {
-    if (bullet.owner === player) return;
+    if (bullet.getData('owner') === player) return;
     bullet.destroy();
     player.health -= 1;
     if (player.health <= 0) {
@@ -115,7 +115,7 @@ class Play extends Phaser.Scene {
         pointer.worldY,
       );
       const bullet = this.projectiles.create(this.player.x, this.player.y, 'projectile');
-      bullet.owner = this.player;
+      bullet.setData('owner', this.player);
       bullet.setVelocity(Math.cos(angle) * 300, Math.sin(angle) * 300);
     }
     this.enemies.children.each((enemy) => {
@@ -149,7 +149,7 @@ class Play extends Phaser.Scene {
       if (Math.random() < 0.01) {
         const angle = Phaser.Math.Angle.Between(enemy.x, enemy.y, target.x, target.y);
         const bullet = this.projectiles.create(enemy.x, enemy.y, 'projectile');
-        bullet.owner = enemy;
+        bullet.setData('owner', enemy);
         bullet.setVelocity(Math.cos(angle) * 300, Math.sin(angle) * 300);
       }
     }, this);
@@ -175,7 +175,36 @@ const config = {
   },
   scene: [Boot, Play],
 };
+let game = null;
+
+function startGame() {
+  if (!game) {
+    game = new Phaser.Game(config);
+  } else {
+    game.scene.resume('Play');
+  }
+}
+
+function pauseGame() {
+  if (!game) return;
+  const scene = game.scene.getScene('Play');
+  if (scene.scene.isPaused()) {
+    scene.scene.resume();
+  } else {
+    scene.scene.pause();
+  }
+}
+
+function restartGame() {
+  if (game) {
+    game.destroy(true);
+    game = null;
+  }
+  game = new Phaser.Game(config);
+}
 
 window.addEventListener('load', () => {
-  new Phaser.Game(config);
+  document.getElementById('startBtn').addEventListener('click', startGame);
+  document.getElementById('pauseBtn').addEventListener('click', pauseGame);
+  document.getElementById('restartBtn').addEventListener('click', restartGame);
 });
