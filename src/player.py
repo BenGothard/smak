@@ -6,7 +6,9 @@ class Player:
 
     def __init__(self, x: int, y: int) -> None:
         """Load the player sprite and position it on screen."""
-        self.image = pygame.image.load("assets/images/player.png").convert_alpha()
+        # Create a simple green square so no external assets are required
+        self.image = pygame.Surface((32, 32), pygame.SRCALPHA)
+        self.image.fill((0, 255, 0))
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
         # Allow the player to take damage like enemies
