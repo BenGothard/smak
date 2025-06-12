@@ -30,6 +30,13 @@ class Boot extends Phaser.Scene {
 const GAME_WIDTH = 1024;
 const GAME_HEIGHT = 768;
 
+// Tunable gameplay constants
+const PLAYER_MAX_HEALTH = 10;
+const ENEMY_MAX_HEALTH = 10;
+const ENEMY_SPAWN_COUNT = 5;
+const REGEN_DELAY = 3000;
+const REGEN_INTERVAL = 1000;
+
 class Play extends Phaser.Scene {
   constructor() {
     super('Play');
@@ -47,16 +54,24 @@ class Play extends Phaser.Scene {
       space: Phaser.Input.Keyboard.KeyCodes.SPACE,
     });
 
-    this.player = this.physics.add.sprite(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'player');
+    this.player = this.physics.add.sprite(
+      GAME_WIDTH / 2,
+      GAME_HEIGHT / 2,
+      'player',
+    );
     this.player.setCollideWorldBounds(true);
-    this.player.health = 5;
+    this.player.health = PLAYER_MAX_HEALTH;
+    this.player.lastHit = this.time.now;
+    this.player.lastRegen = this.player.lastHit;
 
     this.enemies = this.physics.add.group();
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < ENEMY_SPAWN_COUNT; i++) {
       const ex = Phaser.Math.Between(50, GAME_WIDTH - 50);
       const ey = Phaser.Math.Between(50, GAME_HEIGHT - 50);
       const enemy = this.enemies.create(ex, ey, 'enemy');
-      enemy.health = 3;
+      enemy.health = ENEMY_MAX_HEALTH;
+      enemy.lastHit = this.time.now;
+      enemy.lastRegen = enemy.lastHit;
     }
 
     this.projectiles = this.physics.add.group();
@@ -68,6 +83,8 @@ class Play extends Phaser.Scene {
     if (bullet.getData('owner') === enemy) return;
     bullet.destroy();
     enemy.health -= 1;
+    enemy.lastHit = this.time.now;
+    enemy.lastRegen = enemy.lastHit;
     if (enemy.health <= 0) {
       enemy.destroy();
     }
@@ -76,6 +93,8 @@ class Play extends Phaser.Scene {
     if (bullet.getData('owner') === player) return;
     bullet.destroy();
     player.health -= 1;
+    player.lastHit = this.time.now;
+    player.lastRegen = player.lastHit;
     if (player.health <= 0) {
       player.destroy();
     }
@@ -141,6 +160,8 @@ class Play extends Phaser.Scene {
       if (Phaser.Math.Distance.Between(enemy.x, enemy.y, target.x, target.y) < 40) {
         if (target.health !== undefined) {
           target.health -= 1;
+          target.lastHit = this.time.now;
+          target.lastRegen = target.lastHit;
           if (target.health <= 0) {
             target.destroy();
           }
@@ -152,7 +173,28 @@ class Play extends Phaser.Scene {
         bullet.setData('owner', enemy);
         bullet.setVelocity(Math.cos(angle) * 300, Math.sin(angle) * 300);
       }
+
+      const now = this.time.now;
+      if (
+        enemy.health < ENEMY_MAX_HEALTH &&
+        now - enemy.lastHit > REGEN_DELAY &&
+        now - enemy.lastRegen > REGEN_INTERVAL
+      ) {
+        enemy.health += 1;
+        enemy.lastRegen = now;
+      }
     }, this);
+
+    const nowPlayer = this.time.now;
+    if (
+      this.player.active &&
+      this.player.health < PLAYER_MAX_HEALTH &&
+      nowPlayer - this.player.lastHit > REGEN_DELAY &&
+      nowPlayer - this.player.lastRegen > REGEN_INTERVAL
+    ) {
+      this.player.health += 1;
+      this.player.lastRegen = nowPlayer;
+    }
 
     this.projectiles.children.each((b) => {
       if (b.x > GAME_WIDTH || b.x < 0 || b.y > GAME_HEIGHT || b.y < 0) {
