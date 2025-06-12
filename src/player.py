@@ -1,5 +1,10 @@
 import pygame
 
+# Player tuning constants
+PLAYER_MAX_HEALTH = 10
+REGEN_DELAY_MS = 3000
+REGEN_INTERVAL_MS = 1000
+
 
 class Player:
     """Represents the player character."""
@@ -12,16 +17,29 @@ class Player:
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
         # Allow the player to take damage like enemies
-        self.health = 5
+        self.health = PLAYER_MAX_HEALTH
+        self.last_hit = pygame.time.get_ticks()
+        self.last_regen = self.last_hit
+
+    def take_damage(self, amount: int) -> None:
+        """Apply damage and reset regen timers."""
+        self.health -= amount
+        self.last_hit = pygame.time.get_ticks()
+        self.last_regen = self.last_hit
 
     def melee_attack(self, enemies) -> None:
         """Damage enemies within melee range."""
         attack_rect = self.rect.inflate(40, 40)
         for enemy in list(enemies):
             if attack_rect.colliderect(enemy.rect):
-                enemy.health -= 1
-                if enemy.health <= 0:
-                    enemies.remove(enemy)
+                if hasattr(enemy, "take_damage"):
+                    enemy.take_damage(1)
+                    if enemy.health <= 0:
+                        enemies.remove(enemy)
+                else:
+                    enemy.health -= 1
+                    if enemy.health <= 0:
+                        enemies.remove(enemy)
 
     def handle_input(self) -> None:
         """Handle keyboard input for movement with WASD."""
@@ -40,6 +58,15 @@ class Player:
         self.handle_input()
         self.rect.x = max(0, min(800 - self.rect.width, self.rect.x))
         self.rect.y = max(0, min(600 - self.rect.height, self.rect.y))
+
+        now = pygame.time.get_ticks()
+        if (
+            self.health < PLAYER_MAX_HEALTH
+            and now - self.last_hit > REGEN_DELAY_MS
+            and now - self.last_regen > REGEN_INTERVAL_MS
+        ):
+            self.health += 1
+            self.last_regen = now
 
     def draw(self, screen: pygame.Surface) -> None:
         """Draw the player to the given screen."""

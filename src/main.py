@@ -6,6 +6,9 @@ from player import Player
 from enemy import Enemy
 from projectile import Projectile
 
+# Number of enemies spawned at game start
+ENEMY_SPAWN_COUNT = 6
+
 
 class Game:
     """Encapsulates the game state and main loop."""
@@ -21,7 +24,8 @@ class Game:
         self.player = Player(400, 300)
         # Spawn several enemies at random positions
         self.enemies = [
-            Enemy(random.randint(50, 750), random.randint(50, 550)) for _ in range(6)
+            Enemy(random.randint(50, 750), random.randint(50, 550))
+            for _ in range(ENEMY_SPAWN_COUNT)
         ]
         # List to hold active projectiles
         self.projectiles = []
@@ -64,7 +68,10 @@ class Game:
                     if p.owner is t:
                         continue
                     if p.rect.colliderect(t.rect):
-                        t.health -= 1
+                        if hasattr(t, "take_damage"):
+                            t.take_damage(1)
+                        else:
+                            t.health -= 1
                         if p in self.projectiles:
                             self.projectiles.remove(p)
                         if isinstance(t, Enemy) and t.health <= 0:

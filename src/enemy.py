@@ -4,6 +4,12 @@ from typing import List, Protocol
 
 from projectile import Projectile
 
+# Tunable enemy constants
+ENEMY_SPEED = 2
+ENEMY_MAX_HEALTH = 10
+REGEN_DELAY_MS = 3000
+REGEN_INTERVAL_MS = 1000
+
 
 class HasRect(Protocol):
     """Simple protocol for objects with a rect attribute."""
@@ -21,9 +27,17 @@ class Enemy:
         self.image.fill((255, 0, 0))
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
-        self.speed = 2
+        self.speed = ENEMY_SPEED
         # Amount of damage the enemy can take before being destroyed
-        self.health = 3
+        self.health = ENEMY_MAX_HEALTH
+        self.last_hit = pygame.time.get_ticks()
+        self.last_regen = self.last_hit
+
+    def take_damage(self, amount: int) -> None:
+        """Apply damage and reset regen timers."""
+        self.health -= amount
+        self.last_hit = pygame.time.get_ticks()
+        self.last_regen = self.last_hit
 
     def update(self, targets: List[HasRect], projectiles: List[Projectile]) -> None:
         """Move toward the nearest target and occasionally attack."""
@@ -46,7 +60,9 @@ class Enemy:
 
         # Melee attack if in range
         if self.rect.inflate(40, 40).colliderect(target.rect):
-            if hasattr(target, "health"):
+            if hasattr(target, "take_damage"):
+                target.take_damage(1)
+            elif hasattr(target, "health"):
                 target.health -= 1
 
         # Occasionally fire a projectile at the target
@@ -54,6 +70,16 @@ class Enemy:
             dx = target.rect.centerx - self.rect.centerx
             dy = target.rect.centery - self.rect.centery
             projectiles.append(Projectile(self.rect.centerx, self.rect.centery, dx, dy, owner=self))
+
+        # Regenerate health over time if not recently hit
+        now = pygame.time.get_ticks()
+        if (
+            self.health < ENEMY_MAX_HEALTH
+            and now - self.last_hit > REGEN_DELAY_MS
+            and now - self.last_regen > REGEN_INTERVAL_MS
+        ):
+            self.health += 1
+            self.last_regen = now
 
     def draw(self, screen: pygame.Surface) -> None:
         """Draw the enemy to the given screen."""
