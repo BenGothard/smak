@@ -30,9 +30,11 @@ SMaK is an open source arcade shooter written in Python with a Phaser 3 web port
    npm run build
    ```
 
-This generates a `docs/` directory containing the static site. Commit this
-folder to your repository and enable **GitHub Pages** to serve from the `docs/`
-folder. The game will then be playable at:
+This generates a `docs/` directory containing the static site. The included
+GitHub Actions workflow automatically publishes this folder to the
+`gh-pages` branch, so you don't need to commit it manually. Enable
+**GitHub Pages** to serve from the `gh-pages` branch and the game will be
+playable at:
 
 <https://YOUR_GITHUB_USERNAME.github.io/smak>
 
