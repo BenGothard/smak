@@ -33,7 +33,7 @@ const GAME_HEIGHT = 768;
 class Play extends Phaser.Scene {
   constructor() {
     super('Play');
-    this.enemy = null;
+    this.enemies = null;
     this.projectiles = null;
   }
   create() {
@@ -49,19 +49,35 @@ class Play extends Phaser.Scene {
 
     this.player = this.physics.add.sprite(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'player');
     this.player.setCollideWorldBounds(true);
+    this.player.health = 5;
 
-    this.enemy = this.physics.add.sprite(100, 100, 'enemy');
-    this.enemy.health = 3;
+    this.enemies = this.physics.add.group();
+    for (let i = 0; i < 5; i++) {
+      const ex = Phaser.Math.Between(50, GAME_WIDTH - 50);
+      const ey = Phaser.Math.Between(50, GAME_HEIGHT - 50);
+      const enemy = this.enemies.create(ex, ey, 'enemy');
+      enemy.health = 3;
+    }
 
     this.projectiles = this.physics.add.group();
 
-    this.physics.add.overlap(this.projectiles, this.enemy, this.hitEnemy, null, this);
+    this.physics.add.overlap(this.projectiles, this.enemies, this.hitEnemy, null, this);
+    this.physics.add.overlap(this.projectiles, this.player, this.hitPlayer, null, this);
   }
   hitEnemy(bullet, enemy) {
+    if (bullet.owner === enemy) return;
     bullet.destroy();
     enemy.health -= 1;
     if (enemy.health <= 0) {
       enemy.destroy();
+    }
+  }
+  hitPlayer(bullet, player) {
+    if (bullet.owner === player) return;
+    bullet.destroy();
+    player.health -= 1;
+    if (player.health <= 0) {
+      player.destroy();
     }
   }
   update() {
@@ -80,17 +96,14 @@ class Play extends Phaser.Scene {
 
     if (Phaser.Input.Keyboard.JustDown(this.keys.space)) {
       const range = 40;
-      if (
-        this.enemy.active &&
-        Phaser.Math.Distance.Between(
-          this.player.x,
-          this.player.y,
-          this.enemy.x,
-          this.enemy.y,
-        ) < range
-      ) {
-        this.hitEnemy({ destroy: () => {} }, this.enemy);
-      }
+      this.enemies.children.each((enemy) => {
+        if (
+          enemy.active &&
+          Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y) < range
+        ) {
+          this.hitEnemy({ destroy: () => {} }, enemy);
+        }
+      }, this);
     }
 
     if (Phaser.Input.Keyboard.JustDown(this.keys.shift)) {
@@ -102,18 +115,44 @@ class Play extends Phaser.Scene {
         pointer.worldY,
       );
       const bullet = this.projectiles.create(this.player.x, this.player.y, 'projectile');
+      bullet.owner = this.player;
       bullet.setVelocity(Math.cos(angle) * 300, Math.sin(angle) * 300);
     }
-
-    if (this.enemy.active) {
-      if (this.player.x > this.enemy.x) {
-        this.enemy.setVelocityX(60);
-      } else if (this.player.x < this.enemy.x) {
-        this.enemy.setVelocityX(-60);
-      } else {
-        this.enemy.setVelocityX(0);
+    this.enemies.children.each((enemy) => {
+      if (!enemy.active) return;
+      const others = this.enemies.getChildren().filter((e) => e !== enemy && e.active);
+      const targets = others.concat([this.player]);
+      let target = targets[0];
+      let minDist = (enemy.x - target.x) ** 2 + (enemy.y - target.y) ** 2;
+      for (const t of targets) {
+        const d = (enemy.x - t.x) ** 2 + (enemy.y - t.y) ** 2;
+        if (d < minDist) {
+          minDist = d;
+          target = t;
+        }
       }
-    }
+      if (target.x > enemy.x) {
+        enemy.setVelocityX(60);
+      } else if (target.x < enemy.x) {
+        enemy.setVelocityX(-60);
+      } else {
+        enemy.setVelocityX(0);
+      }
+      if (Phaser.Math.Distance.Between(enemy.x, enemy.y, target.x, target.y) < 40) {
+        if (target.health !== undefined) {
+          target.health -= 1;
+          if (target.health <= 0) {
+            target.destroy();
+          }
+        }
+      }
+      if (Math.random() < 0.01) {
+        const angle = Phaser.Math.Angle.Between(enemy.x, enemy.y, target.x, target.y);
+        const bullet = this.projectiles.create(enemy.x, enemy.y, 'projectile');
+        bullet.owner = enemy;
+        bullet.setVelocity(Math.cos(angle) * 300, Math.sin(angle) * 300);
+      }
+    }, this);
 
     this.projectiles.children.each((b) => {
       if (b.x > GAME_WIDTH || b.x < 0 || b.y > GAME_HEIGHT || b.y < 0) {
