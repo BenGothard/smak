@@ -9,6 +9,8 @@ class Player:
         self.image = pygame.image.load("assets/images/player.png").convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
+        # Allow the player to take damage like enemies
+        self.health = 5
 
     def melee_attack(self, enemies) -> None:
         """Damage enemies within melee range."""

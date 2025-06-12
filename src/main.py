@@ -1,5 +1,6 @@
 """Main entry point for the SMaK game."""
 
+import random
 import pygame
 from player import Player
 from enemy import Enemy
@@ -18,7 +19,10 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
         self.player = Player(400, 300)
-        self.enemies = [Enemy(100, 100)]
+        # Spawn several enemies at random positions
+        self.enemies = [
+            Enemy(random.randint(50, 750), random.randint(50, 550)) for _ in range(4)
+        ]
         # List to hold active projectiles
         self.projectiles = []
 
@@ -35,7 +39,7 @@ class Game:
                 if event.key in (pygame.K_LSHIFT, pygame.K_RSHIFT):
                     x, y = self.player.rect.center
                     mx, my = pygame.mouse.get_pos()
-                    self.projectiles.append(Projectile(x, y, mx - x, my - y))
+                    self.projectiles.append(Projectile(x, y, mx - x, my - y, owner=self.player))
 
     def run(self):
         """Main game loop."""
@@ -46,7 +50,9 @@ class Game:
             self.player.update()
             self.player.draw(self.screen)
             for e in self.enemies:
-                e.update(self.player.rect)
+                others = [self.player] + [o for o in self.enemies if o is not e]
+                target_rects = [t.rect for t in others]
+                e.update(target_rects, self.projectiles)
                 e.draw(self.screen)
             for p in self.projectiles[:]:
                 p.update()
@@ -54,13 +60,18 @@ class Game:
                 if p.off_screen(800, 600):
                     self.projectiles.remove(p)
                     continue
-                for e in self.enemies[:]:
-                    if p.rect.colliderect(e.rect):
-                        e.health -= 1
+                targets = self.enemies[:] + [self.player]
+                for t in targets:
+                    if p.owner is t:
+                        continue
+                    if p.rect.colliderect(t.rect):
+                        t.health -= 1
                         if p in self.projectiles:
                             self.projectiles.remove(p)
-                        if e.health <= 0:
-                            self.enemies.remove(e)
+                        if isinstance(t, Enemy) and t.health <= 0:
+                            self.enemies.remove(t)
+                        elif isinstance(t, Player) and t.health <= 0:
+                            self.running = False
                         break
             pygame.display.flip()
             self.clock.tick(60)
