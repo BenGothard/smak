@@ -4,7 +4,9 @@
   "description": "Phaser 3 web build of smak",
   "scripts": {
     "start": "http-server -c-1 -a localhost -p 8080 ./static",
-    "build": "rm -rf docs && cp -r static docs && touch docs/.nojekyll"
+    "build": "rm -rf docs && cp -r static docs && touch docs/.nojekyll",
+    "lint:js": "eslint js/",
+    "lint:py": "flake8 src/"
   },
   "dependencies": {
     "phaser": "^3.70.0"
