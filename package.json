@@ -9,10 +9,10 @@
     "lint:py": "flake8 src/"
   },
   "dependencies": {
-    "phaser": "^3.70.0"
+    "phaser": "latest"
   },
   "devDependencies": {
-    "http-server": "^14.1.1",
-    "eslint": "^8.57.0"
+    "http-server": "latest",
+    "eslint": "latest"
   }
 }
