@@ -82,6 +82,7 @@ class Play extends Phaser.Scene {
   hitEnemy(bullet, enemy) {
     if (bullet.getData('owner') === enemy) return;
     bullet.destroy();
+    if (!enemy.active) return;
     enemy.health -= 1;
     enemy.lastHit = this.time.now;
     enemy.lastRegen = enemy.lastHit;
@@ -92,6 +93,7 @@ class Play extends Phaser.Scene {
   hitPlayer(bullet, player) {
     if (bullet.getData('owner') === player) return;
     bullet.destroy();
+    if (!player.active) return;
     player.health -= 1;
     player.lastHit = this.time.now;
     player.lastRegen = player.lastHit;
