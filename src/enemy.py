@@ -10,7 +10,9 @@ class Enemy:
 
     def __init__(self, x: int, y: int) -> None:
         """Load the enemy sprite and position it on screen."""
-        self.image = pygame.image.load("assets/images/enemy.png").convert_alpha()
+        # Create a red square sprite at runtime to avoid external files
+        self.image = pygame.Surface((32, 32), pygame.SRCALPHA)
+        self.image.fill((255, 0, 0))
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
         self.speed = 2

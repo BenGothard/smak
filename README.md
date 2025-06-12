@@ -1,6 +1,6 @@
 # SMaK Game
 
-SMaK is an open source arcade shooter written in Python with a Phaser 3 web port. The project started as a small prototype using Pygame and was later ported to run in the browser. All sprites are generated at runtime, allowing the repository to remain lightweight without binary assets.
+SMaK is an open source arcade shooter written in Python with a Phaser 3 web port. The project started as a small prototype using Pygame and was later ported to run in the browser. **Both versions generate their sprites at runtime**, keeping the repository lightweight without binary assets.
 
 ## Getting Started
 

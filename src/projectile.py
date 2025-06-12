@@ -6,7 +6,9 @@ class Projectile:
 
     def __init__(self, x: int, y: int, dx: float, dy: float, speed: int = 10, owner=None) -> None:
         """Create a projectile at (x, y) moving in (dx, dy) direction."""
-        self.image = pygame.image.load("assets/images/projectile.png").convert_alpha()
+        # Yellow square generated on the fly instead of loading an image
+        self.image = pygame.Surface((8, 8), pygame.SRCALPHA)
+        self.image.fill((255, 255, 0))
         self.rect = self.image.get_rect(center=(x, y))
         # Normalize direction and scale by speed
         magnitude = (dx ** 2 + dy ** 2) ** 0.5 or 1
