@@ -2,9 +2,9 @@ import pygame
 
 
 class Projectile:
-    """Simple projectile fired by the player."""
+    """Simple projectile fired by a character."""
 
-    def __init__(self, x: int, y: int, dx: float, dy: float, speed: int = 10) -> None:
+    def __init__(self, x: int, y: int, dx: float, dy: float, speed: int = 10, owner=None) -> None:
         """Create a projectile at (x, y) moving in (dx, dy) direction."""
         self.image = pygame.image.load("assets/images/projectile.png").convert_alpha()
         self.rect = self.image.get_rect(center=(x, y))
@@ -13,6 +13,7 @@ class Projectile:
         self.dx = dx / magnitude
         self.dy = dy / magnitude
         self.speed = speed
+        self.owner = owner
 
     def update(self) -> None:
         """Move the projectile each frame."""
