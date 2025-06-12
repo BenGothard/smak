@@ -28,9 +28,14 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-                x, y = self.player.rect.center
-                self.projectiles.append(Projectile(x, y, 1, 0))
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    # Melee attack damages nearby enemies
+                    self.player.melee_attack(self.enemies)
+                if event.key in (pygame.K_LSHIFT, pygame.K_RSHIFT):
+                    x, y = self.player.rect.center
+                    mx, my = pygame.mouse.get_pos()
+                    self.projectiles.append(Projectile(x, y, mx - x, my - y))
 
     def run(self):
         """Main game loop."""
