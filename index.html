@@ -24,6 +24,23 @@
       margin-top: 10px;
       justify-content: center;
     }
+    #classSelect {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      justify-content: center;
+    }
+    #classSelect label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: white;
+      font-size: 14px;
+    }
+    #classSelect img {
+      width: 32px;
+      height: 32px;
+    }
     h1 {
       margin: 10px 0 0;
       text-align: center;
@@ -35,6 +52,15 @@
 </head>
 <body>
   <h1>Smak</h1>
+  <div id="classSelect">
+    <span>Choose your fighter:</span>
+    <label class="fighter-option"><input type="radio" name="fighterClass" value="archer"><img src="assets/fighter/archer.png" alt="archer"></label>
+    <label class="fighter-option"><input type="radio" name="fighterClass" value="axe-thrower"><img src="assets/fighter/axe-thrower.png" alt="axe-thrower"></label>
+    <label class="fighter-option"><input type="radio" name="fighterClass" value="wizard"><img src="assets/fighter/wizard.png" alt="wizard"></label>
+    <label class="fighter-option"><input type="radio" name="fighterClass" value="shield-bearer"><img src="assets/fighter/shield-bearer.png" alt="shield-bearer"></label>
+    <label class="fighter-option"><input type="radio" name="fighterClass" value="demon"><img src="assets/fighter/demon.png" alt="demon"></label>
+    <label class="fighter-option"><input type="radio" name="fighterClass" value="monk"><img src="assets/fighter/monk.png" alt="monk"></label>
+  </div>
   <div id="ui">
     <button id="startBtn">Start</button>
     <button id="pauseBtn">Pause</button>

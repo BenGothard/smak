@@ -388,18 +388,20 @@ const config = {
 let game = null;
 
 function chooseClass() {
-  const inputs = document.querySelectorAll('input[name="fighterClass"]');
-  const selected = Array.from(inputs).find((i) => i.checked);
+  const selected = document.querySelector('input[name="fighterClass"]:checked');
   if (selected && FIGHTERS.includes(selected.value)) {
     playerClass = selected.value;
-  } else {
-    playerClass = FIGHTERS[0];
+    return true;
   }
+  return false;
 }
 
 function startGame() {
+  if (!chooseClass()) {
+    alert('Please choose a fighter class first.');
+    return;
+  }
   if (!game) {
-    chooseClass();
     game = new Phaser.Game(config);
   } else {
     game.scene.resume('Play');
@@ -430,6 +432,5 @@ window.addEventListener('load', () => {
   document.getElementById('startBtn').addEventListener('click', startGame);
   document.getElementById('pauseBtn').addEventListener('click', pauseGame);
   document.getElementById('restartBtn').addEventListener('click', restartGame);
-  // Initialize the game board immediately so the canvas is visible
-  startGame();
+  // Game will start when the user clicks the start button after choosing a class
 });
