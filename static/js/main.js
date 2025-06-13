@@ -79,8 +79,10 @@ class Play extends Phaser.Scene {
           this.player.lives -= 1;
           this.player.health = PLAYER_MAX_HEALTH;
           this.player.setPosition(GAME_WIDTH / 2, GAME_HEIGHT / 2);
+          if (this.updateLivesText) this.updateLivesText();
         } else {
           this.player.destroy();
+          if (this.updateLivesText) this.updateLivesText();
         }
       }
     };
@@ -97,6 +99,12 @@ class Play extends Phaser.Scene {
     }
 
     this.healthGraphics = this.add.graphics();
+
+    this.livesText = this.add.text(10, GAME_HEIGHT - 30, '', { fontSize: '24px' });
+    this.updateLivesText = () => {
+      this.livesText.setText('\u2764'.repeat(this.player.lives));
+    };
+    this.updateLivesText();
 
     this.projectiles = this.physics.add.group();
 
@@ -130,6 +138,7 @@ class Play extends Phaser.Scene {
     }
   }
   update() {
+    if (this.updateLivesText) this.updateLivesText();
     const moveLeft = this.cursors.left.isDown || this.keys.left.isDown;
     const moveRight = this.cursors.right.isDown || this.keys.right.isDown;
     const moveUp = this.cursors.up.isDown || this.keys.up.isDown;

@@ -35,6 +35,7 @@ class Game:
         self.font = pygame.font.SysFont(None, 24)
         self.crown_font = pygame.font.SysFont(None, 32)
         self.champion = None
+        self.hearts_color = (255, 0, 0)
 
     def handle_events(self):
         """Process incoming events."""
@@ -113,6 +114,10 @@ class Game:
                     (0, 200, 0),
                     (x, y, int(bar_width * f.health / max_hp), bar_height),
                 )
+            # Draw remaining lives as hearts near the bottom left
+            hearts = "\u2764" * self.player.lives
+            heart_surf = self.font.render(hearts, True, self.hearts_color)
+            self.screen.blit(heart_surf, (10, 570))
 
             # Determine champion and draw crown when one fighter remains
             alive = [f for f in fighters if f.health > 0]
