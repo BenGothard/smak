@@ -314,7 +314,8 @@ function pauseGame() {
 
 function restartGame() {
   if (game) {
-    game.destroy(true);
+    // Preserve the existing canvas so the new game can attach
+    game.destroy(false);
     game = null;
   }
   game = new Phaser.Game(config);
