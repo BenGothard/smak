@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smak Phaser</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      height: 100vh;
+      background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1600');
+      background-size: cover;
+      background-position: center;
+    }
+    canvas { display: block; margin-top: 20px; }
+    #ui {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+      justify-content: center;
+    }
+    h1 {
+      margin: 10px 0 0;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>Smak</h1>
+  <div id="ui">
+    <button id="startBtn">Start</button>
+    <button id="pauseBtn">Pause</button>
+    <button id="restartBtn">Restart</button>
+  </div>
+  <canvas id="gameCanvas"></canvas>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.70.0/dist/phaser.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
