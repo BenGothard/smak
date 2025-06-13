@@ -17,7 +17,7 @@ class Player:
 
     def __init__(self, x: int, y: int, fighter: str) -> None:
         """Load the player sprite and position it on screen."""
-        raw = pygame.image.load(f"assets/{fighter}").convert_alpha()
+        raw = pygame.image.load(f"assets/fighter/{fighter}.png").convert_alpha()
         self.image = pygame.transform.scale(raw, SPRITE_SIZE)
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
