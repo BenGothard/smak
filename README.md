@@ -36,6 +36,10 @@ GitHub Actions workflow automatically publishes this folder to the
 **GitHub Pages** to serve from the `gh-pages` branch and the game will be
 playable at:
 
+> **Note**: the workflow expects a repository secret named
+> `GH_PAGES_TOKEN` containing a personal access token with `repo` scope so
+> it can push updates to the `gh-pages` branch.
+
 <https://YOUR_GITHUB_USERNAME.github.io/smak>
 
 ## Repository Layout
