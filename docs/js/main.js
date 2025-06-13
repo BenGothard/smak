@@ -274,12 +274,10 @@ const config = {
 let game = null;
 
 function chooseClass() {
-  const choice = window.prompt(
-    `Choose your fighter: ${FIGHTERS.join(', ')}`,
-    FIGHTERS[0],
-  );
-  if (choice && FIGHTERS.includes(choice)) {
-    playerClass = choice;
+  const inputs = document.querySelectorAll('input[name="fighterClass"]');
+  const selected = Array.from(inputs).find((i) => i.checked);
+  if (selected && FIGHTERS.includes(selected.value)) {
+    playerClass = selected.value;
   } else {
     playerClass = FIGHTERS[0];
   }
