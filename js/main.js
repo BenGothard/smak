@@ -420,8 +420,12 @@ function pauseGame() {
 
 function restartGame() {
   if (game) {
-    // Preserve the existing canvas so the new game can attach
-    game.destroy(false);
+    const parent = game.canvas.parentNode;
+    game.destroy(true);
+    const newCanvas = document.createElement('canvas');
+    newCanvas.id = 'gameCanvas';
+    parent.appendChild(newCanvas);
+    config.canvas = newCanvas;
     game = null;
   }
   chooseClass();
