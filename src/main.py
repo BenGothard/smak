@@ -107,23 +107,32 @@ class Game:
                 if p.off_screen(800, 600):
                     self.projectiles.remove(p)
                     continue
+
                 targets = self.enemies[:] + [self.player]
+                hit = None
                 for t in targets:
                     if p.owner is t:
                         continue
                     if p.rect.colliderect(t.rect):
-                        if hasattr(t, "take_damage"):
-                            t.take_damage(PROJECTILE_DAMAGE)
-                        else:
-                            t.health -= PROJECTILE_DAMAGE
-                        if p in self.projectiles:
-                            self.projectiles.remove(p)
-                        if isinstance(t, Enemy) and t.health <= 0:
-                            if t in self.enemies:
-                                self.enemies.remove(t)
-                        elif isinstance(t, Player) and t.health <= 0:
-                            self.running = False
+                        hit = t
                         break
+
+                if hit is None:
+                    continue
+
+                if p in self.projectiles:
+                    self.projectiles.remove(p)
+
+                if hasattr(hit, "take_damage"):
+                    hit.take_damage(PROJECTILE_DAMAGE)
+                else:
+                    hit.health -= PROJECTILE_DAMAGE
+
+                if isinstance(hit, Enemy) and hit.health <= 0:
+                    if hit in self.enemies:
+                        self.enemies.remove(hit)
+                elif isinstance(hit, Player) and hit.health <= 0:
+                    self.running = False
             # Draw health bars along the left side
             fighters = [self.player] + self.enemies
             for idx, f in enumerate(fighters):
