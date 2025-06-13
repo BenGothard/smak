@@ -8,6 +8,8 @@ from projectile import Projectile
 
 # Number of enemies spawned at game start
 ENEMY_SPAWN_COUNT = 6
+# Distance in pixels to spawn projectiles in front of the shooter
+PROJECTILE_SPAWN_OFFSET = 20
 
 
 class Game:
@@ -43,7 +45,14 @@ class Game:
                 if event.key in (pygame.K_LSHIFT, pygame.K_RSHIFT):
                     x, y = self.player.rect.center
                     mx, my = pygame.mouse.get_pos()
-                    self.projectiles.append(Projectile(x, y, mx - x, my - y, owner=self.player))
+                    dx = mx - x
+                    dy = my - y
+                    mag = (dx ** 2 + dy ** 2) ** 0.5 or 1
+                    start_x = x + int(dx / mag * PROJECTILE_SPAWN_OFFSET)
+                    start_y = y + int(dy / mag * PROJECTILE_SPAWN_OFFSET)
+                    self.projectiles.append(
+                        Projectile(start_x, start_y, mx - x, my - y, owner=self.player)
+                    )
 
     def run(self):
         """Main game loop."""
