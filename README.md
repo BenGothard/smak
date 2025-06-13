@@ -14,6 +14,8 @@ SMaK is an open source arcade shooter written in Python with a Phaser 3 web port
    python src/main.py
    ```
 3. Watch enemies engage in a free-for-all battle where they also attack each other.
+   The player's remaining lives appear as a row of heart icons near the bottom
+   of the screen in both the Pygame and Phaser versions.
 
 ### Phaser Web Build
 1. Install Node.js LTS and dependencies:
