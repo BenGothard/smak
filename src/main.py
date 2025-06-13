@@ -7,7 +7,7 @@ from enemy import Enemy, ENEMY_MAX_HEALTH
 from projectile import Projectile, PROJECTILE_DAMAGE
 
 # Number of enemies spawned at game start
-ENEMY_SPAWN_COUNT = 6
+ENEMY_SPAWN_COUNT = 5
 # Distance in pixels to spawn projectiles in front of the shooter
 PROJECTILE_SPAWN_OFFSET = 25
 
