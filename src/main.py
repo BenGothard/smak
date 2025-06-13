@@ -11,6 +11,30 @@ ENEMY_SPAWN_COUNT = 6
 # Distance in pixels to spawn projectiles in front of the shooter
 PROJECTILE_SPAWN_OFFSET = 25
 
+# Available fighter classes
+FIGHTERS = [
+    "archer",
+    "axe-thrower",
+    "wizard",
+    "shield-bearer",
+    "demon",
+    "monk",
+]
+
+
+def choose_class() -> str:
+    """Prompt the user to choose a fighter class."""
+    print("Choose your fighter:")
+    for idx, f in enumerate(FIGHTERS, 1):
+        print(f"{idx}. {f}")
+    try:
+        choice = int(input("Enter number [1-6]: "))
+    except Exception:
+        choice = 1
+    if 1 <= choice <= len(FIGHTERS):
+        return FIGHTERS[choice - 1]
+    return FIGHTERS[0]
+
 
 class Game:
     """Encapsulates the game state and main loop."""
@@ -23,10 +47,16 @@ class Game:
         pygame.display.set_caption("SMaK")
         self.clock = pygame.time.Clock()
         self.running = True
-        self.player = Player(400, 300)
+        player_class = choose_class()
+        self.player = Player(400, 300, player_class)
+        enemy_choices = [c for c in FIGHTERS if c != player_class]
         # Spawn several enemies at random positions
         self.enemies = [
-            Enemy(random.randint(50, 750), random.randint(50, 550))
+            Enemy(
+                random.randint(50, 750),
+                random.randint(50, 550),
+                random.choice(enemy_choices),
+            )
             for _ in range(ENEMY_SPAWN_COUNT)
         ]
         # List to hold active projectiles
