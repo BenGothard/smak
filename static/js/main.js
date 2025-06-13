@@ -258,4 +258,6 @@ window.addEventListener('load', () => {
   document.getElementById('startBtn').addEventListener('click', startGame);
   document.getElementById('pauseBtn').addEventListener('click', pauseGame);
   document.getElementById('restartBtn').addEventListener('click', restartGame);
+  // Initialize the game board immediately so the canvas is visible
+  startGame();
 });
