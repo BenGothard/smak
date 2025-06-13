@@ -9,25 +9,29 @@
       margin: 0;
       padding: 0;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      justify-content: flex-start;
       align-items: center;
       height: 100vh;
       background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1600');
       background-size: cover;
       background-position: center;
     }
-    canvas { display: block; }
+    canvas { display: block; margin-top: 20px; }
     #ui {
-      position: absolute;
-      top: 10px;
-      left: 10px;
       display: flex;
       gap: 10px;
-      z-index: 1;
+      margin-top: 10px;
+      justify-content: center;
+    }
+    h1 {
+      margin: 10px 0 0;
+      text-align: center;
     }
   </style>
 </head>
 <body>
+  <h1>Smak</h1>
   <div id="ui">
     <button id="startBtn">Start</button>
     <button id="pauseBtn">Pause</button>
