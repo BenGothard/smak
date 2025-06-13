@@ -98,6 +98,19 @@ class Game:
                 e.update(others, self.projectiles)
                 e.draw(self.screen)
 
+            fighters = [self.player] + self.enemies
+            for i, f1 in enumerate(fighters):
+                for f2 in fighters[i + 1 :]:
+                    if f1.rect.colliderect(f2.rect):
+                        if hasattr(f1, "lose_life"):
+                            f1.lose_life()
+                        if hasattr(f2, "lose_life"):
+                            f2.lose_life()
+                        if isinstance(f1, Enemy) and f1.health <= 0 and f1 in self.enemies:
+                            self.enemies.remove(f1)
+                        if isinstance(f2, Enemy) and f2.health <= 0 and f2 in self.enemies:
+                            self.enemies.remove(f2)
+
             if self.player.health <= 0:
                 self.running = False
                 continue

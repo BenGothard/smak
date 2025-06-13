@@ -26,11 +26,13 @@ const GAME_HEIGHT = 768;
 const PLAYER_MAX_HEALTH = 10;
 const PLAYER_MAX_LIVES = 10;
 const ENEMY_MAX_HEALTH = 10;
+const ENEMY_MAX_LIVES = 1;
 const ENEMY_SPAWN_COUNT = 5;
 const ENEMY_BASE_SPEED = 60;
 const ENEMY_BOOST_PER_HP = 6;
 const FIRE_BASE_CHANCE = 0.01;
 const FIRE_BOOST_PER_HP = 0.005;
+const SKULL_EMOJI = '\uD83D\uDC80';
 const REGEN_DELAY = 3000;
 const REGEN_INTERVAL = 1000;
 const PROJECTILE_SPAWN_OFFSET = 25;
@@ -121,16 +123,30 @@ class Play extends Phaser.Scene {
     this.player.lives = PLAYER_MAX_LIVES;
     this.player.lastHit = this.time.now;
     this.player.lastRegen = this.player.lastHit;
+    this.player.loseLife = () => {
+      if (this.player.lives > 0) {
+        this.player.lives -= 1;
+      }
+      if (this.player.lives > 0) {
+        this.player.health = PLAYER_MAX_HEALTH;
+        this.player.setPosition(GAME_WIDTH / 2, GAME_HEIGHT / 2);
+      } else {
+        this.player.health = 0;
+      }
+      if (this.player.lives <= 0 && !this.player.skull) {
+        this.player.skull = this.add.text(0, 0, SKULL_EMOJI, {
+          fontSize: '32px',
+        }).setOrigin(0.5);
+        this.player.skull.setPosition(this.player.x, this.player.y - 40);
+      }
+    };
     this.player.takeDamage = (amount) => {
       this.player.health -= amount;
       this.player.lastHit = this.time.now;
       this.player.lastRegen = this.player.lastHit;
       if (this.player.health <= 0) {
-        if (this.player.lives > 0) {
-          this.player.lives -= 1;
-          this.player.health = PLAYER_MAX_HEALTH;
-          this.player.setPosition(GAME_WIDTH / 2, GAME_HEIGHT / 2);
-        } else {
+        this.player.loseLife();
+        if (this.player.lives <= 0) {
           this.player.destroy();
         }
       }
@@ -144,9 +160,29 @@ class Play extends Phaser.Scene {
       const type = Phaser.Utils.Array.GetRandom(enemyChoices);
       const enemy = this.enemies.create(ex, ey, type).setScale(SPRITE_SCALE);
       enemy.health = ENEMY_MAX_HEALTH;
+      enemy.lives = ENEMY_MAX_LIVES;
       enemy.lastHit = this.time.now;
       enemy.lastRegen = enemy.lastHit;
       enemy.agent = new EnemyAgent(enemy, this);
+      enemy.loseLife = () => {
+        if (enemy.lives > 0) {
+          enemy.lives -= 1;
+        }
+        if (enemy.lives > 0) {
+          enemy.health = ENEMY_MAX_HEALTH;
+          enemy.setPosition(
+            Phaser.Math.Between(50, GAME_WIDTH - 50),
+            Phaser.Math.Between(50, GAME_HEIGHT - 50),
+          );
+        } else {
+          enemy.health = 0;
+        }
+        if (enemy.lives <= 0 && !enemy.skull) {
+          enemy.skull = this.add.text(enemy.x, enemy.y - 40, SKULL_EMOJI, {
+            fontSize: '32px',
+          }).setOrigin(0.5);
+        }
+      };
     }
 
     this.healthGraphics = this.add.graphics();
@@ -167,6 +203,20 @@ class Play extends Phaser.Scene {
       null,
       this,
     );
+    this.physics.add.collider(
+      this.player,
+      this.enemies,
+      this.fighterCollision,
+      null,
+      this,
+    );
+    this.physics.add.collider(
+      this.enemies,
+      this.enemies,
+      this.fighterCollision,
+      null,
+      this,
+    );
   }
   hitEnemy(bullet, enemy) {
     if (bullet.getData('owner') === enemy) return;
@@ -176,7 +226,12 @@ class Play extends Phaser.Scene {
     enemy.lastHit = this.time.now;
     enemy.lastRegen = enemy.lastHit;
     if (enemy.health <= 0) {
-      enemy.destroy();
+      if (typeof enemy.loseLife === 'function') {
+        enemy.loseLife();
+      }
+      if (enemy.lives <= 0) {
+        enemy.destroy();
+      }
     }
   }
   hitPlayer(bullet, player) {
@@ -190,9 +245,25 @@ class Play extends Phaser.Scene {
       player.lastHit = this.time.now;
       player.lastRegen = player.lastHit;
       if (player.health <= 0) {
-        player.destroy();
+        if (typeof player.loseLife === 'function') {
+          player.loseLife();
+        }
+        if (player.lives <= 0) {
+          player.destroy();
+        }
       }
     }
+  }
+
+  fighterCollision(a, b) {
+    if (typeof a.loseLife === 'function') {
+      a.loseLife();
+    }
+    if (typeof b.loseLife === 'function') {
+      b.loseLife();
+    }
+    if (a !== this.player && a.lives <= 0) a.destroy();
+    if (b !== this.player && b.lives <= 0) b.destroy();
   }
   update() {
     const moveLeft = this.cursors.left.isDown || this.keys.left.isDown;
@@ -271,6 +342,18 @@ class Play extends Phaser.Scene {
         (barWidth * f.health) / maxHp,
         barHeight,
       );
+
+      if (f.lives !== undefined && f.lives <= 0) {
+        if (!f.skull) {
+          f.skull = this.add.text(0, 0, SKULL_EMOJI, {
+            fontSize: '32px',
+          }).setOrigin(0.5);
+        }
+        f.skull.setPosition(f.x, f.y - 40);
+        f.skull.setVisible(true);
+      } else if (f.skull) {
+        f.skull.setVisible(false);
+      }
     });
 
     // Crown the remaining fighter when only one is left

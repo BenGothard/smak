@@ -4,12 +4,15 @@ from typing import List, Protocol
 
 from projectile import Projectile
 
+SKULL_EMOJI = "\U0001F480"
+
 # Sprite size for enemy images
 SPRITE_SIZE = (32, 32)
 
 # Tunable enemy constants
 ENEMY_SPEED = 2
 ENEMY_MAX_HEALTH = 10
+ENEMY_MAX_LIVES = 1
 SPEED_BOOST_PER_HP = 0.2
 FIRE_BASE_CHANCE = 0.01
 FIRE_BOOST_PER_HP = 0.005
@@ -76,15 +79,31 @@ class Enemy:
         self.speed = ENEMY_SPEED
         # Amount of damage the enemy can take before being destroyed
         self.health = ENEMY_MAX_HEALTH
+        self.lives = ENEMY_MAX_LIVES
         self.last_hit = pygame.time.get_ticks()
         self.last_regen = self.last_hit
         self.agent = EnemyAgent(self)
+
+    def lose_life(self) -> None:
+        """Remove a life and optionally respawn."""
+        if self.lives > 0:
+            self.lives -= 1
+        if self.lives > 0:
+            self.health = ENEMY_MAX_HEALTH
+            self.rect.topleft = (
+                random.randint(50, 750),
+                random.randint(50, 550),
+            )
+        else:
+            self.health = 0
 
     def take_damage(self, amount: int) -> None:
         """Apply damage and reset regen timers."""
         self.health -= amount
         self.last_hit = pygame.time.get_ticks()
         self.last_regen = self.last_hit
+        if self.health <= 0:
+            self.lose_life()
 
     def update(self, targets: List[HasRect], projectiles: List[Projectile]) -> None:
         """Delegate behavior to the agent controller."""
@@ -93,3 +112,9 @@ class Enemy:
     def draw(self, screen: pygame.Surface) -> None:
         """Draw the enemy to the given screen."""
         screen.blit(self.image, self.rect)
+        if self.lives <= 0:
+            font = pygame.font.SysFont(None, 32)
+            skull = font.render(SKULL_EMOJI, True, (255, 255, 255))
+            x = self.rect.centerx - skull.get_width() // 2
+            y = self.rect.top - 30
+            screen.blit(skull, (x, y))
