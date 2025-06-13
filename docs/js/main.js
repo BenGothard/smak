@@ -108,8 +108,8 @@ class Play extends Phaser.Scene {
   }
   hitEnemy(bullet, enemy) {
     if (bullet.getData('owner') === enemy) return;
+    if (!enemy.active || !bullet.active) return;
     bullet.destroy();
-    if (!enemy.active) return;
     enemy.health -= PROJECTILE_DAMAGE;
     enemy.lastHit = this.time.now;
     enemy.lastRegen = enemy.lastHit;
@@ -119,8 +119,8 @@ class Play extends Phaser.Scene {
   }
   hitPlayer(bullet, player) {
     if (bullet.getData('owner') === player) return;
+    if (!player.active || !bullet.active) return;
     bullet.destroy();
-    if (!player.active) return;
     if (typeof player.takeDamage === 'function') {
       player.takeDamage(PROJECTILE_DAMAGE);
     } else {
