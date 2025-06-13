@@ -246,7 +246,8 @@ function pauseGame() {
 
 function restartGame() {
   if (game) {
-    game.destroy(true);
+    // Preserve the canvas element between restarts
+    game.destroy(false);
     game = null;
   }
   game = new Phaser.Game(config);
