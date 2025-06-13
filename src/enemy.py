@@ -22,9 +22,14 @@ class Enemy:
 
     def __init__(self, x: int, y: int) -> None:
         """Load the enemy sprite and position it on screen."""
-        # Create a red square sprite at runtime to avoid external files
+        # Use a unique color for each enemy so they appear as different fighters
+        self.color = (
+            random.randint(50, 255),
+            random.randint(50, 255),
+            random.randint(50, 255),
+        )
         self.image = pygame.Surface((32, 32), pygame.SRCALPHA)
-        self.image.fill((255, 0, 0))
+        self.image.fill(self.color)
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
         self.speed = ENEMY_SPEED
