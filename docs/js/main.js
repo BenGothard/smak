@@ -420,8 +420,12 @@ function pauseGame() {
 
 function restartGame() {
   if (game) {
-    const parent = game.canvas.parentNode;
+    const oldCanvas = game.canvas;
+    const parent = oldCanvas.parentNode;
     game.destroy(true);
+    if (oldCanvas && parent.contains(oldCanvas)) {
+      parent.removeChild(oldCanvas);
+    }
     const newCanvas = document.createElement('canvas');
     newCanvas.id = 'gameCanvas';
     parent.appendChild(newCanvas);
