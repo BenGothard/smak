@@ -36,6 +36,7 @@ const ENEMY_MAX_HEALTH = 10;
 const ENEMY_SPAWN_COUNT = 5;
 const REGEN_DELAY = 3000;
 const REGEN_INTERVAL = 1000;
+const PROJECTILE_SPAWN_OFFSET = 20;
 
 class Play extends Phaser.Scene {
   constructor() {
@@ -135,7 +136,13 @@ class Play extends Phaser.Scene {
         pointer.worldX,
         pointer.worldY,
       );
-      const bullet = this.projectiles.create(this.player.x, this.player.y, 'projectile');
+      const offsetX = Math.cos(angle) * PROJECTILE_SPAWN_OFFSET;
+      const offsetY = Math.sin(angle) * PROJECTILE_SPAWN_OFFSET;
+      const bullet = this.projectiles.create(
+        this.player.x + offsetX,
+        this.player.y + offsetY,
+        'projectile',
+      );
       bullet.setData('owner', this.player);
       bullet.setVelocity(Math.cos(angle) * 300, Math.sin(angle) * 300);
     }

@@ -29,6 +29,7 @@ class Boot extends Phaser.Scene {
 
 const GAME_WIDTH = 1024;
 const GAME_HEIGHT = 768;
+const PROJECTILE_SPAWN_OFFSET = 20;
 
 class Play extends Phaser.Scene {
   constructor() {
@@ -114,7 +115,13 @@ class Play extends Phaser.Scene {
         pointer.worldX,
         pointer.worldY,
       );
-      const bullet = this.projectiles.create(this.player.x, this.player.y, 'projectile');
+      const offsetX = Math.cos(angle) * PROJECTILE_SPAWN_OFFSET;
+      const offsetY = Math.sin(angle) * PROJECTILE_SPAWN_OFFSET;
+      const bullet = this.projectiles.create(
+        this.player.x + offsetX,
+        this.player.y + offsetY,
+        'projectile',
+      );
       bullet.setData('owner', this.player);
       bullet.setVelocity(Math.cos(angle) * 300, Math.sin(angle) * 300);
     }
