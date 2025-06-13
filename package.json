@@ -5,7 +5,7 @@
   "scripts": {
     "start": "http-server -c-1 -a localhost -p 8080 ./static",
     "build": "rm -rf docs && cp -r static docs && touch docs/.nojekyll",
-    "lint:js": "eslint static/js --ext .js,.jsx",
+    "lint:js": "eslint static/js",
     "lint:py": "flake8 src/"
   },
   "dependencies": {
