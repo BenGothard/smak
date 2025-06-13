@@ -6,7 +6,7 @@ class Boot extends Phaser.Scene {
   }
   preload() {
     FIGHTERS.forEach((f) => {
-      this.load.image(f, `assets/${f}`);
+      this.load.image(f, `assets/fighter/${f}.png`);
     });
     const g = this.make.graphics({ x: 0, y: 0, add: false });
     g.fillStyle(0xffff00, 1);
