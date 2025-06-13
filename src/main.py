@@ -10,6 +10,7 @@ from projectile import Projectile, PROJECTILE_DAMAGE
 ENEMY_SPAWN_COUNT = 6
 # Distance in pixels to spawn projectiles in front of the shooter
 PROJECTILE_SPAWN_OFFSET = 25
+SKULL_DURATION_MS = 1000
 
 
 class Game:
@@ -34,7 +35,9 @@ class Game:
         # Fonts for UI elements
         self.font = pygame.font.SysFont(None, 24)
         self.crown_font = pygame.font.SysFont(None, 32)
+        self.skull_font = pygame.font.SysFont(None, 32)
         self.champion = None
+        self.skulls = []
 
     def handle_events(self):
         """Process incoming events."""
@@ -71,7 +74,35 @@ class Game:
                 e.update(others, self.projectiles)
                 e.draw(self.screen)
 
+            # Collision detection between fighters
+            fighters = [self.player] + self.enemies
+            now = pygame.time.get_ticks()
+            handled = set()
+            for i, f1 in enumerate(fighters):
+                for f2 in fighters[i + 1 :]:
+                    if f1.rect.colliderect(f2.rect):
+                        pair = tuple(sorted((id(f1), id(f2))))
+                        if pair in handled:
+                            continue
+                        handled.add(pair)
+                        for f in (f1, f2):
+                            if hasattr(f, "lives"):
+                                f.lives -= 1
+                                if f.lives <= 0:
+                                    self.skulls.append(
+                                        (f.rect.centerx, f.rect.top - 30, now)
+                                    )
+                                    f.health = 0
+                                    if isinstance(f, Enemy) and f in self.enemies:
+                                        self.enemies.remove(f)
+                                    elif isinstance(f, Player):
+                                        self.running = False
+
             if self.player.health <= 0:
+                if self.player.lives <= 0:
+                    self.skulls.append(
+                        (self.player.rect.centerx, self.player.rect.top - 30, pygame.time.get_ticks())
+                    )
                 self.running = False
                 continue
             for p in self.projectiles[:]:
@@ -80,6 +111,7 @@ class Game:
                 if p.off_screen(800, 600):
                     self.projectiles.remove(p)
                     continue
+                now = pygame.time.get_ticks()
                 targets = self.enemies[:] + [self.player]
                 for t in targets:
                     if p.owner is t:
@@ -91,10 +123,17 @@ class Game:
                             t.health -= PROJECTILE_DAMAGE
                         if p in self.projectiles:
                             self.projectiles.remove(p)
-                        if isinstance(t, Enemy) and t.health <= 0:
+                        if isinstance(t, Enemy) and t.health <= 0 and t.lives <= 0:
                             if t in self.enemies:
+                                self.skulls.append(
+                                    (t.rect.centerx, t.rect.top - 30, now)
+                                )
                                 self.enemies.remove(t)
                         elif isinstance(t, Player) and t.health <= 0:
+                            if t.lives <= 0:
+                                self.skulls.append(
+                                    (t.rect.centerx, t.rect.top - 30, now)
+                                )
                             self.running = False
                         break
             # Draw health bars along the left side
@@ -123,6 +162,13 @@ class Game:
                 cx = self.champion.rect.centerx - crown.get_width() // 2
                 cy = self.champion.rect.top - 30
                 self.screen.blit(crown, (cx, cy))
+
+            # Draw skull indicators
+            now = pygame.time.get_ticks()
+            self.skulls = [s for s in self.skulls if now - s[2] < SKULL_DURATION_MS]
+            for x, y, _ in self.skulls:
+                skull = self.skull_font.render("\U0001F480", True, (255, 255, 255))
+                self.screen.blit(skull, (x - skull.get_width() // 2, y))
             pygame.display.flip()
             self.clock.tick(60)
         # Clean shutdown when the loop exits.

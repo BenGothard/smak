@@ -7,6 +7,7 @@ from projectile import Projectile
 # Tunable enemy constants
 ENEMY_SPEED = 2
 ENEMY_MAX_HEALTH = 10
+ENEMY_MAX_LIVES = 3
 REGEN_DELAY_MS = 3000
 REGEN_INTERVAL_MS = 1000
 
@@ -35,6 +36,7 @@ class Enemy:
         self.speed = ENEMY_SPEED
         # Amount of damage the enemy can take before being destroyed
         self.health = ENEMY_MAX_HEALTH
+        self.lives = ENEMY_MAX_LIVES
         self.last_hit = pygame.time.get_ticks()
         self.last_regen = self.last_hit
 
@@ -43,6 +45,16 @@ class Enemy:
         self.health -= amount
         self.last_hit = pygame.time.get_ticks()
         self.last_regen = self.last_hit
+        if self.health <= 0:
+            if self.lives > 0:
+                self.lives -= 1
+                self.health = ENEMY_MAX_HEALTH
+                self.rect.topleft = (
+                    random.randint(50, 750),
+                    random.randint(50, 550),
+                )
+            else:
+                self.health = 0
 
     def update(self, targets: List[HasRect], projectiles: List[Projectile]) -> None:
         """Move toward the nearest target and occasionally attack."""

@@ -43,12 +43,10 @@ class Player:
             if attack_rect.colliderect(enemy.rect):
                 if hasattr(enemy, "take_damage"):
                     enemy.take_damage(1)
-                    if enemy.health <= 0:
-                        enemies.remove(enemy)
                 else:
                     enemy.health -= 1
-                    if enemy.health <= 0:
-                        enemies.remove(enemy)
+                if enemy.health <= 0 and getattr(enemy, "lives", 0) <= 0:
+                    enemies.remove(enemy)
 
     def handle_input(self) -> None:
         """Handle keyboard input for movement with WASD."""

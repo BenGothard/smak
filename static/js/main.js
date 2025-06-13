@@ -34,11 +34,13 @@ const GAME_HEIGHT = 768;
 const PLAYER_MAX_HEALTH = 10;
 const PLAYER_MAX_LIVES = 10;
 const ENEMY_MAX_HEALTH = 10;
+const ENEMY_MAX_LIVES = 3;
 const ENEMY_SPAWN_COUNT = 5;
 const REGEN_DELAY = 3000;
 const REGEN_INTERVAL = 1000;
 const PROJECTILE_SPAWN_OFFSET = 25;
 const PROJECTILE_DAMAGE = 1;
+const SKULL_DURATION = 1000;
 
 class Play extends Phaser.Scene {
   constructor() {
@@ -48,6 +50,7 @@ class Play extends Phaser.Scene {
     this.healthGraphics = null;
     this.champion = null;
     this.crown = null;
+    this.skulls = [];
   }
   create() {
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -80,6 +83,7 @@ class Play extends Phaser.Scene {
           this.player.health = PLAYER_MAX_HEALTH;
           this.player.setPosition(GAME_WIDTH / 2, GAME_HEIGHT / 2);
         } else {
+          this.showSkull(this.player.x, this.player.y);
           this.player.destroy();
         }
       }
@@ -92,6 +96,7 @@ class Play extends Phaser.Scene {
       const enemy = this.enemies.create(ex, ey, 'enemy');
       enemy.setTint(Phaser.Display.Color.RandomRGB().color);
       enemy.health = ENEMY_MAX_HEALTH;
+      enemy.lives = ENEMY_MAX_LIVES;
       enemy.lastHit = this.time.now;
       enemy.lastRegen = enemy.lastHit;
     }
@@ -102,6 +107,8 @@ class Play extends Phaser.Scene {
 
     this.physics.add.overlap(this.projectiles, this.enemies, this.hitEnemy, null, this);
     this.physics.add.overlap(this.projectiles, this.player, this.hitPlayer, null, this);
+    this.physics.add.collider(this.player, this.enemies, this.fighterCollision, null, this);
+    this.physics.add.collider(this.enemies, this.enemies, this.fighterCollision, null, this);
   }
   hitEnemy(bullet, enemy) {
     if (bullet.getData('owner') === enemy) return;
@@ -111,7 +118,17 @@ class Play extends Phaser.Scene {
     enemy.lastHit = this.time.now;
     enemy.lastRegen = enemy.lastHit;
     if (enemy.health <= 0) {
-      enemy.destroy();
+      if (enemy.lives > 0) {
+        enemy.lives -= 1;
+        enemy.health = ENEMY_MAX_HEALTH;
+        enemy.setPosition(
+          Phaser.Math.Between(50, GAME_WIDTH - 50),
+          Phaser.Math.Between(50, GAME_HEIGHT - 50),
+        );
+      } else {
+        this.showSkull(enemy.x, enemy.y);
+        enemy.destroy();
+      }
     }
   }
   hitPlayer(bullet, player) {
@@ -125,9 +142,36 @@ class Play extends Phaser.Scene {
       player.lastHit = this.time.now;
       player.lastRegen = player.lastHit;
       if (player.health <= 0) {
-        player.destroy();
+        if (player.lives > 0) {
+          player.lives -= 1;
+          player.health = PLAYER_MAX_HEALTH;
+          player.setPosition(GAME_WIDTH / 2, GAME_HEIGHT / 2);
+        } else {
+          this.showSkull(player.x, player.y);
+          player.destroy();
+        }
       }
     }
+  }
+
+  fighterCollision(a, b) {
+    [a, b].forEach((f) => {
+      if (f.lives === undefined) return;
+      f.lives -= 1;
+      if (f.lives <= 0) {
+        this.showSkull(f.x, f.y);
+        f.destroy();
+      }
+    });
+  }
+
+  showSkull(x, y) {
+    const skull = this.add.text(x, y - 40, '\uD83D\uDC80', { fontSize: '32px' }).setOrigin(0.5);
+    this.skulls.push(skull);
+    this.time.delayedCall(SKULL_DURATION, () => {
+      skull.destroy();
+      this.skulls = this.skulls.filter((s) => s !== skull);
+    });
   }
   update() {
     const moveLeft = this.cursors.left.isDown || this.keys.left.isDown;
