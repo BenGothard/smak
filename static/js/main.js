@@ -32,6 +32,7 @@ const GAME_HEIGHT = 768;
 
 // Tunable gameplay constants
 const PLAYER_MAX_HEALTH = 10;
+const PLAYER_MAX_LIVES = 10;
 const ENEMY_MAX_HEALTH = 10;
 const ENEMY_SPAWN_COUNT = 5;
 const REGEN_DELAY = 3000;
@@ -62,8 +63,23 @@ class Play extends Phaser.Scene {
     );
     this.player.setCollideWorldBounds(true);
     this.player.health = PLAYER_MAX_HEALTH;
+    this.player.lives = PLAYER_MAX_LIVES;
     this.player.lastHit = this.time.now;
     this.player.lastRegen = this.player.lastHit;
+    this.player.takeDamage = (amount) => {
+      this.player.health -= amount;
+      this.player.lastHit = this.time.now;
+      this.player.lastRegen = this.player.lastHit;
+      if (this.player.health <= 0) {
+        if (this.player.lives > 0) {
+          this.player.lives -= 1;
+          this.player.health = PLAYER_MAX_HEALTH;
+          this.player.setPosition(GAME_WIDTH / 2, GAME_HEIGHT / 2);
+        } else {
+          this.player.destroy();
+        }
+      }
+    };
 
     this.enemies = this.physics.add.group();
     for (let i = 0; i < ENEMY_SPAWN_COUNT; i++) {
@@ -95,11 +111,15 @@ class Play extends Phaser.Scene {
     if (bullet.getData('owner') === player) return;
     bullet.destroy();
     if (!player.active) return;
-    player.health -= 1;
-    player.lastHit = this.time.now;
-    player.lastRegen = player.lastHit;
-    if (player.health <= 0) {
-      player.destroy();
+    if (typeof player.takeDamage === 'function') {
+      player.takeDamage(1);
+    } else {
+      player.health -= 1;
+      player.lastHit = this.time.now;
+      player.lastRegen = player.lastHit;
+      if (player.health <= 0) {
+        player.destroy();
+      }
     }
   }
   update() {
@@ -167,7 +187,9 @@ class Play extends Phaser.Scene {
         enemy.setVelocityX(0);
       }
       if (Phaser.Math.Distance.Between(enemy.x, enemy.y, target.x, target.y) < 40) {
-        if (target.health !== undefined) {
+        if (typeof target.takeDamage === 'function') {
+          target.takeDamage(1);
+        } else if (target.health !== undefined) {
           target.health -= 1;
           target.lastHit = this.time.now;
           target.lastRegen = target.lastHit;
