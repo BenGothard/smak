@@ -1,5 +1,8 @@
 import pygame
 
+# Path to fighter sprite images
+SPRITE_SIZE = (32, 32)
+
 # Player tuning constants
 PLAYER_MAX_HEALTH = 10
 PLAYER_MAX_LIVES = 10
@@ -10,11 +13,10 @@ REGEN_INTERVAL_MS = 1000
 class Player:
     """Represents the player character."""
 
-    def __init__(self, x: int, y: int) -> None:
+    def __init__(self, x: int, y: int, fighter: str) -> None:
         """Load the player sprite and position it on screen."""
-        # Create a simple green square so no external assets are required
-        self.image = pygame.Surface((32, 32), pygame.SRCALPHA)
-        self.image.fill((0, 255, 0))
+        raw = pygame.image.load(f"assets/{fighter}").convert_alpha()
+        self.image = pygame.transform.scale(raw, SPRITE_SIZE)
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
         # Allow the player to take damage like enemies
@@ -35,20 +37,6 @@ class Player:
                 self.rect.topleft = (400, 300)
             else:
                 self.health = 0
-
-    def melee_attack(self, enemies) -> None:
-        """Damage enemies within melee range."""
-        attack_rect = self.rect.inflate(40, 40)
-        for enemy in list(enemies):
-            if attack_rect.colliderect(enemy.rect):
-                if hasattr(enemy, "take_damage"):
-                    enemy.take_damage(1)
-                    if enemy.health <= 0:
-                        enemies.remove(enemy)
-                else:
-                    enemy.health -= 1
-                    if enemy.health <= 0:
-                        enemies.remove(enemy)
 
     def handle_input(self) -> None:
         """Handle keyboard input for movement with WASD."""

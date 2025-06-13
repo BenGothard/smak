@@ -5,18 +5,10 @@ class Boot extends Phaser.Scene {
     super('Boot');
   }
   preload() {
-    // Generate simple textures using graphics to avoid binary assets
+    FIGHTERS.forEach((f) => {
+      this.load.image(f, `assets/${f}`);
+    });
     const g = this.make.graphics({ x: 0, y: 0, add: false });
-    g.fillStyle(0x00ff00, 1);
-    g.fillRect(0, 0, 32, 32);
-    g.generateTexture('player', 32, 32);
-    g.clear();
-
-    g.fillStyle(0xff0000, 1);
-    g.fillRect(0, 0, 32, 32);
-    g.generateTexture('enemy', 32, 32);
-    g.clear();
-
     g.fillStyle(0xffff00, 1);
     g.fillRect(0, 0, 8, 8);
     g.generateTexture('projectile', 8, 8);
@@ -40,6 +32,17 @@ const REGEN_INTERVAL = 1000;
 const PROJECTILE_SPAWN_OFFSET = 25;
 const PROJECTILE_DAMAGE = 1;
 
+const FIGHTERS = [
+  'archer',
+  'axe-thrower',
+  'wizard',
+  'shield-bearer',
+  'demon',
+  'monk',
+];
+let playerClass = FIGHTERS[0];
+const SPRITE_SCALE = 0.0625;
+
 class Play extends Phaser.Scene {
   constructor() {
     super('Play');
@@ -56,15 +59,14 @@ class Play extends Phaser.Scene {
       down: Phaser.Input.Keyboard.KeyCodes.S,
       left: Phaser.Input.Keyboard.KeyCodes.A,
       right: Phaser.Input.Keyboard.KeyCodes.D,
-      shift: Phaser.Input.Keyboard.KeyCodes.SHIFT,
       space: Phaser.Input.Keyboard.KeyCodes.SPACE,
     });
 
     this.player = this.physics.add.sprite(
       GAME_WIDTH / 2,
       GAME_HEIGHT / 2,
-      'player',
-    );
+      playerClass,
+    ).setScale(SPRITE_SCALE);
     this.player.setCollideWorldBounds(true);
     this.player.health = PLAYER_MAX_HEALTH;
     this.player.lives = PLAYER_MAX_LIVES;
@@ -88,11 +90,12 @@ class Play extends Phaser.Scene {
     };
 
     this.enemies = this.physics.add.group();
+    const enemyChoices = FIGHTERS.filter((f) => f !== playerClass);
     for (let i = 0; i < ENEMY_SPAWN_COUNT; i++) {
       const ex = Phaser.Math.Between(50, GAME_WIDTH - 50);
       const ey = Phaser.Math.Between(50, GAME_HEIGHT - 50);
-      const enemy = this.enemies.create(ex, ey, 'enemy');
-      enemy.setTint(Phaser.Display.Color.RandomRGB().color);
+      const type = Phaser.Utils.Array.GetRandom(enemyChoices);
+      const enemy = this.enemies.create(ex, ey, type).setScale(SPRITE_SCALE);
       enemy.health = ENEMY_MAX_HEALTH;
       enemy.lastHit = this.time.now;
       enemy.lastRegen = enemy.lastHit;
@@ -153,18 +156,6 @@ class Play extends Phaser.Scene {
     this.player.setVelocity(vx, vy);
 
     if (Phaser.Input.Keyboard.JustDown(this.keys.space)) {
-      const range = 40;
-      this.enemies.children.each((enemy) => {
-        if (
-          enemy.active &&
-          Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y) < range
-        ) {
-          this.hitEnemy({ destroy: () => {} }, enemy);
-        }
-      }, this);
-    }
-
-    if (Phaser.Input.Keyboard.JustDown(this.keys.shift)) {
       const pointer = this.input.activePointer;
       const angle = Phaser.Math.Angle.Between(
         this.player.x,
@@ -201,18 +192,6 @@ class Play extends Phaser.Scene {
         enemy.setVelocityX(-60);
       } else {
         enemy.setVelocityX(0);
-      }
-      if (Phaser.Math.Distance.Between(enemy.x, enemy.y, target.x, target.y) < 40) {
-        if (typeof target.takeDamage === 'function') {
-          target.takeDamage(1);
-        } else if (target.health !== undefined) {
-          target.health -= 1;
-          target.lastHit = this.time.now;
-          target.lastRegen = target.lastHit;
-          if (target.health <= 0) {
-            target.destroy();
-          }
-        }
       }
       if (Math.random() < 0.01) {
         const angle = Phaser.Math.Angle.Between(enemy.x, enemy.y, target.x, target.y);
@@ -303,8 +282,21 @@ const config = {
 };
 let game = null;
 
+function chooseClass() {
+  const choice = window.prompt(
+    `Choose your fighter: ${FIGHTERS.join(', ')}`,
+    FIGHTERS[0],
+  );
+  if (choice && FIGHTERS.includes(choice)) {
+    playerClass = choice;
+  } else {
+    playerClass = FIGHTERS[0];
+  }
+}
+
 function startGame() {
   if (!game) {
+    chooseClass();
     game = new Phaser.Game(config);
   } else {
     game.scene.resume('Play');
@@ -327,6 +319,7 @@ function restartGame() {
     game.destroy(false);
     game = null;
   }
+  chooseClass();
   game = new Phaser.Game(config);
 }
 

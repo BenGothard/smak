@@ -4,6 +4,9 @@ from typing import List, Protocol
 
 from projectile import Projectile
 
+# Sprite size for enemy images
+SPRITE_SIZE = (32, 32)
+
 # Tunable enemy constants
 ENEMY_SPEED = 2
 ENEMY_MAX_HEALTH = 10
@@ -20,16 +23,10 @@ class HasRect(Protocol):
 class Enemy:
     """Represents an enemy that moves toward the player."""
 
-    def __init__(self, x: int, y: int) -> None:
+    def __init__(self, x: int, y: int, fighter: str) -> None:
         """Load the enemy sprite and position it on screen."""
-        # Use a unique color for each enemy so they appear as different fighters
-        self.color = (
-            random.randint(50, 255),
-            random.randint(50, 255),
-            random.randint(50, 255),
-        )
-        self.image = pygame.Surface((32, 32), pygame.SRCALPHA)
-        self.image.fill(self.color)
+        raw = pygame.image.load(f"assets/{fighter}").convert_alpha()
+        self.image = pygame.transform.scale(raw, SPRITE_SIZE)
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
         self.speed = ENEMY_SPEED
@@ -62,13 +59,6 @@ class Enemy:
             self.rect.x -= self.speed
         # Keep the enemy vertically within the screen bounds.
         self.rect.y = max(0, min(600 - self.rect.height, self.rect.y))
-
-        # Melee attack if in range
-        if self.rect.inflate(40, 40).colliderect(target.rect):
-            if hasattr(target, "take_damage"):
-                target.take_damage(1)
-            elif hasattr(target, "health"):
-                target.health -= 1
 
         # Occasionally fire a projectile at the target
         if random.random() < 0.01:
