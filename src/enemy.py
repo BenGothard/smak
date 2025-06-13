@@ -10,6 +10,9 @@ SPRITE_SIZE = (32, 32)
 # Tunable enemy constants
 ENEMY_SPEED = 2
 ENEMY_MAX_HEALTH = 10
+SPEED_BOOST_PER_HP = 0.2
+FIRE_BASE_CHANCE = 0.01
+FIRE_BOOST_PER_HP = 0.005
 REGEN_DELAY_MS = 3000
 REGEN_INTERVAL_MS = 1000
 
@@ -18,6 +21,47 @@ class HasRect(Protocol):
     """Simple protocol for objects with a rect attribute."""
 
     rect: pygame.Rect
+
+
+class EnemyAgent:
+    """AI controller that manages an enemy's behavior."""
+
+    def __init__(self, enemy: "Enemy") -> None:
+        self.enemy = enemy
+
+    def update(self, targets: List[HasRect], projectiles: List[Projectile]) -> None:
+        enemy = self.enemy
+        if not targets:
+            return
+        target = min(
+            targets,
+            key=lambda t: (
+                (enemy.rect.centerx - t.rect.centerx) ** 2
+                + (enemy.rect.centery - t.rect.centery) ** 2
+            ),
+        )
+        missing_hp = ENEMY_MAX_HEALTH - enemy.health
+        speed = ENEMY_SPEED + SPEED_BOOST_PER_HP * missing_hp
+        if target.rect.centerx > enemy.rect.centerx:
+            enemy.rect.x += int(speed)
+        elif target.rect.centerx < enemy.rect.centerx:
+            enemy.rect.x -= int(speed)
+        enemy.rect.y = max(0, min(600 - enemy.rect.height, enemy.rect.y))
+
+        fire_chance = FIRE_BASE_CHANCE + missing_hp * FIRE_BOOST_PER_HP
+        if random.random() < fire_chance:
+            dx = target.rect.centerx - enemy.rect.centerx
+            dy = target.rect.centery - enemy.rect.centery
+            projectiles.append(Projectile(enemy.rect.centerx, enemy.rect.centery, dx, dy, owner=enemy))
+
+        now = pygame.time.get_ticks()
+        if (
+            enemy.health < ENEMY_MAX_HEALTH
+            and now - enemy.last_hit > REGEN_DELAY_MS
+            and now - enemy.last_regen > REGEN_INTERVAL_MS
+        ):
+            enemy.health += 1
+            enemy.last_regen = now
 
 
 class Enemy:
@@ -34,6 +78,7 @@ class Enemy:
         self.health = ENEMY_MAX_HEALTH
         self.last_hit = pygame.time.get_ticks()
         self.last_regen = self.last_hit
+        self.agent = EnemyAgent(self)
 
     def take_damage(self, amount: int) -> None:
         """Apply damage and reset regen timers."""
@@ -42,39 +87,8 @@ class Enemy:
         self.last_regen = self.last_hit
 
     def update(self, targets: List[HasRect], projectiles: List[Projectile]) -> None:
-        """Move toward the nearest target and occasionally attack."""
-        if not targets:
-            return
-        # Determine the closest target by Euclidean distance
-        target = min(
-            targets,
-            key=lambda t: (
-                (self.rect.centerx - t.rect.centerx) ** 2
-                + (self.rect.centery - t.rect.centery) ** 2
-            ),
-        )
-        if target.rect.centerx > self.rect.centerx:
-            self.rect.x += self.speed
-        elif target.rect.centerx < self.rect.centerx:
-            self.rect.x -= self.speed
-        # Keep the enemy vertically within the screen bounds.
-        self.rect.y = max(0, min(600 - self.rect.height, self.rect.y))
-
-        # Occasionally fire a projectile at the target
-        if random.random() < 0.01:
-            dx = target.rect.centerx - self.rect.centerx
-            dy = target.rect.centery - self.rect.centery
-            projectiles.append(Projectile(self.rect.centerx, self.rect.centery, dx, dy, owner=self))
-
-        # Regenerate health over time if not recently hit
-        now = pygame.time.get_ticks()
-        if (
-            self.health < ENEMY_MAX_HEALTH
-            and now - self.last_hit > REGEN_DELAY_MS
-            and now - self.last_regen > REGEN_INTERVAL_MS
-        ):
-            self.health += 1
-            self.last_regen = now
+        """Delegate behavior to the agent controller."""
+        self.agent.update(targets, projectiles)
 
     def draw(self, screen: pygame.Surface) -> None:
         """Draw the enemy to the given screen."""

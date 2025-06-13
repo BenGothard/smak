@@ -27,6 +27,10 @@ const PLAYER_MAX_HEALTH = 10;
 const PLAYER_MAX_LIVES = 10;
 const ENEMY_MAX_HEALTH = 10;
 const ENEMY_SPAWN_COUNT = 5;
+const ENEMY_BASE_SPEED = 60;
+const ENEMY_BOOST_PER_HP = 6;
+const FIRE_BASE_CHANCE = 0.01;
+const FIRE_BOOST_PER_HP = 0.005;
 const REGEN_DELAY = 3000;
 const REGEN_INTERVAL = 1000;
 const PROJECTILE_SPAWN_OFFSET = 25;
@@ -42,6 +46,51 @@ const FIGHTERS = [
 ];
 let playerClass = FIGHTERS[0];
 const SPRITE_SCALE = 0.0625;
+
+class EnemyAgent {
+  constructor(enemy, scene) {
+    this.enemy = enemy;
+    this.scene = scene;
+  }
+
+  update(targets, projectiles) {
+    if (targets.length === 0) return;
+    let target = targets[0];
+    let minDist = (this.enemy.x - target.x) ** 2 + (this.enemy.y - target.y) ** 2;
+    for (const t of targets) {
+      const d = (this.enemy.x - t.x) ** 2 + (this.enemy.y - t.y) ** 2;
+      if (d < minDist) {
+        minDist = d;
+        target = t;
+      }
+    }
+    const missing = ENEMY_MAX_HEALTH - this.enemy.health;
+    const speed = ENEMY_BASE_SPEED + ENEMY_BOOST_PER_HP * missing;
+    if (target.x > this.enemy.x) {
+      this.enemy.setVelocityX(speed);
+    } else if (target.x < this.enemy.x) {
+      this.enemy.setVelocityX(-speed);
+    } else {
+      this.enemy.setVelocityX(0);
+    }
+    const fireChance = FIRE_BASE_CHANCE + FIRE_BOOST_PER_HP * missing;
+    if (Math.random() < fireChance) {
+      const angle = Phaser.Math.Angle.Between(this.enemy.x, this.enemy.y, target.x, target.y);
+      const bullet = projectiles.create(this.enemy.x, this.enemy.y, 'projectile');
+      bullet.setData('owner', this.enemy);
+      bullet.setVelocity(Math.cos(angle) * 300, Math.sin(angle) * 300);
+    }
+    const now = this.scene.time.now;
+    if (
+      this.enemy.health < ENEMY_MAX_HEALTH &&
+      now - this.enemy.lastHit > REGEN_DELAY &&
+      now - this.enemy.lastRegen > REGEN_INTERVAL
+    ) {
+      this.enemy.health += 1;
+      this.enemy.lastRegen = now;
+    }
+  }
+}
 
 class Play extends Phaser.Scene {
   constructor() {
@@ -97,6 +146,7 @@ class Play extends Phaser.Scene {
       enemy.health = ENEMY_MAX_HEALTH;
       enemy.lastHit = this.time.now;
       enemy.lastRegen = enemy.lastHit;
+      enemy.agent = new EnemyAgent(enemy, this);
     }
 
     this.healthGraphics = this.add.graphics();
@@ -168,38 +218,7 @@ class Play extends Phaser.Scene {
       if (!enemy.active) return;
       const others = this.enemies.getChildren().filter((e) => e !== enemy && e.active);
       const targets = others.concat([this.player]);
-      let target = targets[0];
-      let minDist = (enemy.x - target.x) ** 2 + (enemy.y - target.y) ** 2;
-      for (const t of targets) {
-        const d = (enemy.x - t.x) ** 2 + (enemy.y - t.y) ** 2;
-        if (d < minDist) {
-          minDist = d;
-          target = t;
-        }
-      }
-      if (target.x > enemy.x) {
-        enemy.setVelocityX(60);
-      } else if (target.x < enemy.x) {
-        enemy.setVelocityX(-60);
-      } else {
-        enemy.setVelocityX(0);
-      }
-      if (Math.random() < 0.01) {
-        const angle = Phaser.Math.Angle.Between(enemy.x, enemy.y, target.x, target.y);
-        const bullet = this.projectiles.create(enemy.x, enemy.y, 'projectile');
-        bullet.setData('owner', enemy);
-        bullet.setVelocity(Math.cos(angle) * 300, Math.sin(angle) * 300);
-      }
-
-      const now = this.time.now;
-      if (
-        enemy.health < ENEMY_MAX_HEALTH &&
-        now - enemy.lastHit > REGEN_DELAY &&
-        now - enemy.lastRegen > REGEN_INTERVAL
-      ) {
-        enemy.health += 1;
-        enemy.lastRegen = now;
-      }
+      enemy.agent.update(targets, this.projectiles);
     }, this);
 
     const nowPlayer = this.time.now;
