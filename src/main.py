@@ -44,9 +44,6 @@ class Game:
                 self.running = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
-                    # Melee attack damages nearby enemies
-                    self.player.melee_attack(self.enemies)
-                if event.key in (pygame.K_LSHIFT, pygame.K_RSHIFT):
                     x, y = self.player.rect.center
                     mx, my = pygame.mouse.get_pos()
                     dx = mx - x

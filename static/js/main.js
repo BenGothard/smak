@@ -56,7 +56,6 @@ class Play extends Phaser.Scene {
       down: Phaser.Input.Keyboard.KeyCodes.S,
       left: Phaser.Input.Keyboard.KeyCodes.A,
       right: Phaser.Input.Keyboard.KeyCodes.D,
-      shift: Phaser.Input.Keyboard.KeyCodes.SHIFT,
       space: Phaser.Input.Keyboard.KeyCodes.SPACE,
     });
 
@@ -144,18 +143,6 @@ class Play extends Phaser.Scene {
     this.player.setVelocity(vx, vy);
 
     if (Phaser.Input.Keyboard.JustDown(this.keys.space)) {
-      const range = 40;
-      this.enemies.children.each((enemy) => {
-        if (
-          enemy.active &&
-          Phaser.Math.Distance.Between(this.player.x, this.player.y, enemy.x, enemy.y) < range
-        ) {
-          this.hitEnemy({ destroy: () => {} }, enemy);
-        }
-      }, this);
-    }
-
-    if (Phaser.Input.Keyboard.JustDown(this.keys.shift)) {
       const pointer = this.input.activePointer;
       const angle = Phaser.Math.Angle.Between(
         this.player.x,
@@ -192,18 +179,6 @@ class Play extends Phaser.Scene {
         enemy.setVelocityX(-60);
       } else {
         enemy.setVelocityX(0);
-      }
-      if (Phaser.Math.Distance.Between(enemy.x, enemy.y, target.x, target.y) < 40) {
-        if (typeof target.takeDamage === 'function') {
-          target.takeDamage(1);
-        } else if (target.health !== undefined) {
-          target.health -= 1;
-          target.lastHit = this.time.now;
-          target.lastRegen = target.lastHit;
-          if (target.health <= 0) {
-            target.destroy();
-          }
-        }
       }
       if (Math.random() < 0.01) {
         const angle = Phaser.Math.Angle.Between(enemy.x, enemy.y, target.x, target.y);
