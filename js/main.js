@@ -38,6 +38,7 @@ const ENEMY_SPAWN_COUNT = 5;
 const REGEN_DELAY = 3000;
 const REGEN_INTERVAL = 1000;
 const PROJECTILE_SPAWN_OFFSET = 25;
+const PROJECTILE_DAMAGE = 1;
 
 class Play extends Phaser.Scene {
   constructor() {
@@ -106,7 +107,7 @@ class Play extends Phaser.Scene {
     if (bullet.getData('owner') === enemy) return;
     bullet.destroy();
     if (!enemy.active) return;
-    enemy.health -= 1;
+    enemy.health -= PROJECTILE_DAMAGE;
     enemy.lastHit = this.time.now;
     enemy.lastRegen = enemy.lastHit;
     if (enemy.health <= 0) {
@@ -118,9 +119,9 @@ class Play extends Phaser.Scene {
     bullet.destroy();
     if (!player.active) return;
     if (typeof player.takeDamage === 'function') {
-      player.takeDamage(1);
+      player.takeDamage(PROJECTILE_DAMAGE);
     } else {
-      player.health -= 1;
+      player.health -= PROJECTILE_DAMAGE;
       player.lastHit = this.time.now;
       player.lastRegen = player.lastHit;
       if (player.health <= 0) {
