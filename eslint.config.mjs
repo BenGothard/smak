@@ -11,6 +11,9 @@ const compat = new FlatCompat({
 
 export default [
   {
+    files: ["**/*.js", "**/*.jsx"],
+  },
+  {
     ignores: ["node_modules/**", "docs/**", "static/assets/**"],
   },
   ...compat.config({
