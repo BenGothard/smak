@@ -162,6 +162,8 @@ class Game:
                 cx = self.champion.rect.centerx - crown.get_width() // 2
                 cy = self.champion.rect.top - 30
                 self.screen.blit(crown, (cx, cy))
+            else:
+                self.champion = None
 
             # Draw skull indicators
             now = pygame.time.get_ticks()

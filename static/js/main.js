@@ -319,6 +319,12 @@ class Play extends Phaser.Scene {
     }
     if (this.crown && this.champion && this.champion.active) {
       this.crown.setPosition(this.champion.x, this.champion.y - 40);
+    } else if (this.champion && !this.champion.active) {
+      if (this.crown) {
+        this.crown.destroy();
+        this.crown = null;
+      }
+      this.champion = null;
     }
   }
 }
