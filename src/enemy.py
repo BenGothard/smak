@@ -4,6 +4,9 @@ from typing import List, Protocol
 
 from projectile import Projectile
 
+# Sprite size for enemy images
+SPRITE_SIZE = (32, 32)
+
 # Tunable enemy constants
 ENEMY_SPEED = 2
 ENEMY_MAX_HEALTH = 10
@@ -20,16 +23,10 @@ class HasRect(Protocol):
 class Enemy:
     """Represents an enemy that moves toward the player."""
 
-    def __init__(self, x: int, y: int) -> None:
+    def __init__(self, x: int, y: int, fighter: str) -> None:
         """Load the enemy sprite and position it on screen."""
-        # Use a unique color for each enemy so they appear as different fighters
-        self.color = (
-            random.randint(50, 255),
-            random.randint(50, 255),
-            random.randint(50, 255),
-        )
-        self.image = pygame.Surface((32, 32), pygame.SRCALPHA)
-        self.image.fill(self.color)
+        raw = pygame.image.load(f"assets/fighter/{fighter}").convert_alpha()
+        self.image = pygame.transform.scale(raw, SPRITE_SIZE)
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
         self.speed = ENEMY_SPEED
