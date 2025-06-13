@@ -29,7 +29,7 @@ class Boot extends Phaser.Scene {
 
 const GAME_WIDTH = 1024;
 const GAME_HEIGHT = 768;
-const PROJECTILE_SPAWN_OFFSET = 20;
+const PROJECTILE_SPAWN_OFFSET = 25;
 
 class Play extends Phaser.Scene {
   constructor() {

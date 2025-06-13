@@ -36,7 +36,7 @@ const ENEMY_MAX_HEALTH = 10;
 const ENEMY_SPAWN_COUNT = 5;
 const REGEN_DELAY = 3000;
 const REGEN_INTERVAL = 1000;
-const PROJECTILE_SPAWN_OFFSET = 20;
+const PROJECTILE_SPAWN_OFFSET = 25;
 
 class Play extends Phaser.Scene {
   constructor() {

@@ -9,7 +9,7 @@ from projectile import Projectile
 # Number of enemies spawned at game start
 ENEMY_SPAWN_COUNT = 6
 # Distance in pixels to spawn projectiles in front of the shooter
-PROJECTILE_SPAWN_OFFSET = 20
+PROJECTILE_SPAWN_OFFSET = 25
 
 
 class Game:
