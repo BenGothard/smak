@@ -2,8 +2,8 @@
 
 import random
 import pygame
-from player import Player
-from enemy import Enemy
+from player import Player, PLAYER_MAX_HEALTH
+from enemy import Enemy, ENEMY_MAX_HEALTH
 from projectile import Projectile
 
 # Number of enemies spawned at game start
@@ -31,6 +31,10 @@ class Game:
         ]
         # List to hold active projectiles
         self.projectiles = []
+        # Fonts for UI elements
+        self.font = pygame.font.SysFont(None, 24)
+        self.crown_font = pygame.font.SysFont(None, 32)
+        self.champion = None
 
     def handle_events(self):
         """Process incoming events."""
@@ -93,6 +97,32 @@ class Game:
                         elif isinstance(t, Player) and t.health <= 0:
                             self.running = False
                         break
+            # Draw health bars along the left side
+            fighters = [self.player] + self.enemies
+            for idx, f in enumerate(fighters):
+                if f.health <= 0:
+                    continue
+                max_hp = PLAYER_MAX_HEALTH if isinstance(f, Player) else ENEMY_MAX_HEALTH
+                bar_width = 100
+                bar_height = 10
+                x = 10
+                y = 10 + idx * (bar_height + 10)
+                pygame.draw.rect(self.screen, (80, 0, 0), (x, y, bar_width, bar_height))
+                pygame.draw.rect(
+                    self.screen,
+                    (0, 200, 0),
+                    (x, y, int(bar_width * f.health / max_hp), bar_height),
+                )
+
+            # Determine champion and draw crown when one fighter remains
+            alive = [f for f in fighters if f.health > 0]
+            if len(alive) == 1 and self.champion is None:
+                self.champion = alive[0]
+            if self.champion and self.champion.health > 0:
+                crown = self.crown_font.render("\U0001F451", True, (255, 215, 0))
+                cx = self.champion.rect.centerx - crown.get_width() // 2
+                cy = self.champion.rect.top - 30
+                self.screen.blit(crown, (cx, cy))
             pygame.display.flip()
             self.clock.tick(60)
         # Clean shutdown when the loop exits.

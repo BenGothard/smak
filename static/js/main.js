@@ -44,6 +44,9 @@ class Play extends Phaser.Scene {
     super('Play');
     this.enemies = null;
     this.projectiles = null;
+    this.healthGraphics = null;
+    this.champion = null;
+    this.crown = null;
   }
   create() {
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -86,10 +89,13 @@ class Play extends Phaser.Scene {
       const ex = Phaser.Math.Between(50, GAME_WIDTH - 50);
       const ey = Phaser.Math.Between(50, GAME_HEIGHT - 50);
       const enemy = this.enemies.create(ex, ey, 'enemy');
+      enemy.setTint(Phaser.Display.Color.RandomRGB().color);
       enemy.health = ENEMY_MAX_HEALTH;
       enemy.lastHit = this.time.now;
       enemy.lastRegen = enemy.lastHit;
     }
+
+    this.healthGraphics = this.add.graphics();
 
     this.projectiles = this.physics.add.group();
 
@@ -232,6 +238,43 @@ class Play extends Phaser.Scene {
         b.destroy();
       }
     }, this);
+
+    // Draw health bars on the right side
+    this.healthGraphics.clear();
+    const fighters = [this.player].concat(
+      this.enemies.getChildren().filter((e) => e.active),
+    );
+    fighters.forEach((f, idx) => {
+      const maxHp = f === this.player ? PLAYER_MAX_HEALTH : ENEMY_MAX_HEALTH;
+      const barWidth = 100;
+      const barHeight = 10;
+      const x = GAME_WIDTH - barWidth - 10;
+      const y = 10 + idx * (barHeight + 10);
+      const tint = f.tintTopLeft || 0x00ff00;
+      this.healthGraphics.fillStyle(0x500000, 1);
+      this.healthGraphics.fillRect(x, y, barWidth, barHeight);
+      this.healthGraphics.fillStyle(tint, 1);
+      this.healthGraphics.fillRect(
+        x,
+        y,
+        (barWidth * f.health) / maxHp,
+        barHeight,
+      );
+    });
+
+    // Crown the remaining fighter when only one is left
+    if (!this.champion) {
+      const alive = fighters.filter((f) => f.active);
+      if (alive.length === 1) {
+        this.champion = alive[0];
+        this.crown = this.add.text(0, 0, '\uD83D\uDC51', {
+          fontSize: '32px',
+        }).setOrigin(0.5);
+      }
+    }
+    if (this.crown && this.champion && this.champion.active) {
+      this.crown.setPosition(this.champion.x, this.champion.y - 40);
+    }
   }
 }
 
