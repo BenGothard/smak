@@ -30,6 +30,7 @@ class Boot extends Phaser.Scene {
 const GAME_WIDTH = 1024;
 const GAME_HEIGHT = 768;
 const PROJECTILE_SPAWN_OFFSET = 25;
+const PROJECTILE_DAMAGE = 1;
 
 class Play extends Phaser.Scene {
   constructor() {
@@ -53,7 +54,7 @@ class Play extends Phaser.Scene {
 
     this.player = this.physics.add.sprite(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'player');
     this.player.setCollideWorldBounds(true);
-    this.player.health = 5;
+    this.player.health = 10;
 
     this.enemies = this.physics.add.group();
     for (let i = 0; i < 5; i++) {
@@ -61,7 +62,7 @@ class Play extends Phaser.Scene {
       const ey = Phaser.Math.Between(50, GAME_HEIGHT - 50);
       const enemy = this.enemies.create(ex, ey, 'enemy');
       enemy.setTint(Phaser.Display.Color.RandomRGB().color);
-      enemy.health = 3;
+      enemy.health = 10;
     }
 
     this.healthGraphics = this.add.graphics();
@@ -74,7 +75,7 @@ class Play extends Phaser.Scene {
   hitEnemy(bullet, enemy) {
     if (bullet.getData('owner') === enemy) return;
     bullet.destroy();
-    enemy.health -= 1;
+    enemy.health -= PROJECTILE_DAMAGE;
     if (enemy.health <= 0) {
       enemy.destroy();
     }
@@ -82,7 +83,7 @@ class Play extends Phaser.Scene {
   hitPlayer(bullet, player) {
     if (bullet.getData('owner') === player) return;
     bullet.destroy();
-    player.health -= 1;
+    player.health -= PROJECTILE_DAMAGE;
     if (player.health <= 0) {
       player.destroy();
     }
@@ -153,7 +154,7 @@ class Play extends Phaser.Scene {
       }
       if (Phaser.Math.Distance.Between(enemy.x, enemy.y, target.x, target.y) < 40) {
         if (target.health !== undefined) {
-          target.health -= 1;
+          target.health -= PROJECTILE_DAMAGE;
           if (target.health <= 0) {
             target.destroy();
           }
@@ -179,7 +180,7 @@ class Play extends Phaser.Scene {
       this.enemies.getChildren().filter((e) => e.active),
     );
     fighters.forEach((f, idx) => {
-      const maxHp = f === this.player ? 5 : 3;
+      const maxHp = 10;
       const barWidth = 100;
       const barHeight = 10;
       const x = GAME_WIDTH - barWidth - 10;

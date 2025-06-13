@@ -1,5 +1,8 @@
 import pygame
 
+# Damage each projectile deals when it hits a fighter
+PROJECTILE_DAMAGE = 1
+
 
 class Projectile:
     """Simple projectile fired by a character."""

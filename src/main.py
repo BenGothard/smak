@@ -4,7 +4,7 @@ import random
 import pygame
 from player import Player, PLAYER_MAX_HEALTH
 from enemy import Enemy, ENEMY_MAX_HEALTH
-from projectile import Projectile
+from projectile import Projectile, PROJECTILE_DAMAGE
 
 # Number of enemies spawned at game start
 ENEMY_SPAWN_COUNT = 6
@@ -86,9 +86,9 @@ class Game:
                         continue
                     if p.rect.colliderect(t.rect):
                         if hasattr(t, "take_damage"):
-                            t.take_damage(1)
+                            t.take_damage(PROJECTILE_DAMAGE)
                         else:
-                            t.health -= 1
+                            t.health -= PROJECTILE_DAMAGE
                         if p in self.projectiles:
                             self.projectiles.remove(p)
                         if isinstance(t, Enemy) and t.health <= 0:
