@@ -1,5 +1,7 @@
 import pygame
 
+SKULL_EMOJI = "\U0001F480"
+
 # Path to fighter sprite images
 SPRITE_SIZE = (32, 32)
 
@@ -25,18 +27,23 @@ class Player:
         self.last_hit = pygame.time.get_ticks()
         self.last_regen = self.last_hit
 
+    def lose_life(self) -> None:
+        """Remove a life and respawn or die."""
+        if self.lives > 0:
+            self.lives -= 1
+        if self.lives > 0:
+            self.health = PLAYER_MAX_HEALTH
+            self.rect.topleft = (400, 300)
+        else:
+            self.health = 0
+
     def take_damage(self, amount: int) -> None:
         """Apply damage and reset regen timers."""
         self.health -= amount
         self.last_hit = pygame.time.get_ticks()
         self.last_regen = self.last_hit
         if self.health <= 0:
-            if self.lives > 0:
-                self.lives -= 1
-                self.health = PLAYER_MAX_HEALTH
-                self.rect.topleft = (400, 300)
-            else:
-                self.health = 0
+            self.lose_life()
 
     def handle_input(self) -> None:
         """Handle keyboard input for movement with WASD."""
@@ -68,3 +75,9 @@ class Player:
     def draw(self, screen: pygame.Surface) -> None:
         """Draw the player to the given screen."""
         screen.blit(self.image, self.rect)
+        if self.lives <= 0:
+            font = pygame.font.SysFont(None, 32)
+            skull = font.render(SKULL_EMOJI, True, (255, 255, 255))
+            x = self.rect.centerx - skull.get_width() // 2
+            y = self.rect.top - 30
+            screen.blit(skull, (x, y))
