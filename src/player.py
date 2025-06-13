@@ -2,6 +2,7 @@ import pygame
 
 # Player tuning constants
 PLAYER_MAX_HEALTH = 10
+PLAYER_MAX_LIVES = 10
 REGEN_DELAY_MS = 3000
 REGEN_INTERVAL_MS = 1000
 
@@ -18,6 +19,7 @@ class Player:
         self.rect.topleft = (x, y)
         # Allow the player to take damage like enemies
         self.health = PLAYER_MAX_HEALTH
+        self.lives = PLAYER_MAX_LIVES
         self.last_hit = pygame.time.get_ticks()
         self.last_regen = self.last_hit
 
@@ -26,6 +28,13 @@ class Player:
         self.health -= amount
         self.last_hit = pygame.time.get_ticks()
         self.last_regen = self.last_hit
+        if self.health <= 0:
+            if self.lives > 0:
+                self.lives -= 1
+                self.health = PLAYER_MAX_HEALTH
+                self.rect.topleft = (400, 300)
+            else:
+                self.health = 0
 
     def melee_attack(self, enemies) -> None:
         """Damage enemies within melee range."""

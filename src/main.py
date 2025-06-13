@@ -66,6 +66,10 @@ class Game:
                 others = [self.player] + [o for o in self.enemies if o is not e]
                 e.update(others, self.projectiles)
                 e.draw(self.screen)
+
+            if self.player.health <= 0:
+                self.running = False
+                continue
             for p in self.projectiles[:]:
                 p.update()
                 p.draw(self.screen)
