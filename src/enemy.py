@@ -63,13 +63,6 @@ class Enemy:
         # Keep the enemy vertically within the screen bounds.
         self.rect.y = max(0, min(600 - self.rect.height, self.rect.y))
 
-        # Melee attack if in range
-        if self.rect.inflate(40, 40).colliderect(target.rect):
-            if hasattr(target, "take_damage"):
-                target.take_damage(1)
-            elif hasattr(target, "health"):
-                target.health -= 1
-
         # Occasionally fire a projectile at the target
         if random.random() < 0.01:
             dx = target.rect.centerx - self.rect.centerx

@@ -36,20 +36,6 @@ class Player:
             else:
                 self.health = 0
 
-    def melee_attack(self, enemies) -> None:
-        """Damage enemies within melee range."""
-        attack_rect = self.rect.inflate(40, 40)
-        for enemy in list(enemies):
-            if attack_rect.colliderect(enemy.rect):
-                if hasattr(enemy, "take_damage"):
-                    enemy.take_damage(1)
-                    if enemy.health <= 0:
-                        enemies.remove(enemy)
-                else:
-                    enemy.health -= 1
-                    if enemy.health <= 0:
-                        enemies.remove(enemy)
-
     def handle_input(self) -> None:
         """Handle keyboard input for movement with WASD."""
         keys = pygame.key.get_pressed()
