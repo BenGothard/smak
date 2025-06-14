@@ -428,7 +428,9 @@ function restartGame() {
     }
     const newCanvas = document.createElement('canvas');
     newCanvas.id = 'gameCanvas';
+    newCanvas.tabIndex = 0;
     parent.appendChild(newCanvas);
+    newCanvas.focus();
     config.canvas = newCanvas;
     game = null;
   }
