@@ -83,6 +83,8 @@ class Enemy:
         self.last_hit = pygame.time.get_ticks()
         self.last_regen = self.last_hit
         self.agent = EnemyAgent(self)
+        font = pygame.font.SysFont(None, 32)
+        self.skull = font.render(SKULL_EMOJI, True, (255, 255, 255))
 
     def lose_life(self) -> None:
         """Remove a life and optionally respawn."""
@@ -113,8 +115,6 @@ class Enemy:
         """Draw the enemy to the given screen."""
         screen.blit(self.image, self.rect)
         if self.lives <= 0:
-            font = pygame.font.SysFont(None, 32)
-            skull = font.render(SKULL_EMOJI, True, (255, 255, 255))
-            x = self.rect.centerx - skull.get_width() // 2
+            x = self.rect.centerx - self.skull.get_width() // 2
             y = self.rect.top - 30
-            screen.blit(skull, (x, y))
+            screen.blit(self.skull, (x, y))
