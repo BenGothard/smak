@@ -11,6 +11,8 @@ const modalRestartBtn = document.getElementById('modalRestartBtn');
 const WIDTH = canvas.width;
 const HEIGHT = canvas.height;
 const FIGHTER_SIZE = 48;
+const MAX_MOVE_SPEED = 150;
+const ACCELERATION = 200;
 
 const MIN_SPAWN_DISTANCE = 200;
 const castleEmoji = '🏰';
@@ -48,6 +50,8 @@ class Fighter {
     this.sprite.src = sprites[cls];
     this.dead = false;
     this.hasCrown = false;
+    this.speed = 0;
+    this.maxSpeed = MAX_MOVE_SPEED;
   }
 
   draw() {
@@ -145,14 +149,27 @@ function drawBoard() {
 }
 
 function handleInput(dt) {
-  const speed = 150;
   const player = fighters[0];
-  player.vx = 0;
-  player.vy = 0;
-  if (keys['w']) player.vy = -speed;
-  if (keys['s']) player.vy = speed;
-  if (keys['a']) player.vx = -speed;
-  if (keys['d']) player.vx = speed;
+  let dx = 0;
+  let dy = 0;
+  if (keys['w']) dy -= 1;
+  if (keys['s']) dy += 1;
+  if (keys['a']) dx -= 1;
+  if (keys['d']) dx += 1;
+
+  const moving = dx !== 0 || dy !== 0;
+  if (moving) {
+    const len = Math.hypot(dx, dy);
+    dx /= len;
+    dy /= len;
+    player.speed = Math.min(player.maxSpeed, player.speed + ACCELERATION * dt);
+  } else {
+    player.speed = Math.max(0, player.speed - ACCELERATION * dt);
+  }
+
+  player.vx = dx * player.speed;
+  player.vy = dy * player.speed;
+
   if (keys[' ']) {
     shoot(player, mouseX, mouseY);
     keys[' '] = false; // prevent continuous shooting
@@ -178,14 +195,14 @@ function aiControl(f, dt) {
   }
 
   const angle = Math.atan2(target.y - f.y, target.x - f.x);
-  const speed = 150;
-  let vx = Math.cos(angle) * speed;
-  let vy = Math.sin(angle) * speed;
+  f.speed = Math.min(f.maxSpeed, f.speed + ACCELERATION * dt);
+  let vx = Math.cos(angle) * f.speed;
+  let vy = Math.sin(angle) * f.speed;
   const dist = Math.hypot(target.x - f.x, target.y - f.y);
   if (dist < 100) {
     const strafe = angle + Math.PI/2;
-    vx += Math.cos(strafe) * speed * 0.5;
-    vy += Math.sin(strafe) * speed * 0.5;
+    vx += Math.cos(strafe) * f.speed * 0.5;
+    vy += Math.sin(strafe) * f.speed * 0.5;
   }
   f.vx = vx;
   f.vy = vy;
