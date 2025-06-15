@@ -7,6 +7,7 @@ const classSelect = document.getElementById('classSelect');
 
 const WIDTH = canvas.width;
 const HEIGHT = canvas.height;
+const FIGHTER_SIZE = 48;
 
 const castleEmoji = '🏰';
 const skullEmoji = '💀';
@@ -50,7 +51,11 @@ class Fighter {
       ctx.fillText(skullEmoji, this.x, this.y);
       return;
     }
-    ctx.drawImage(this.sprite, this.x - 16, this.y - 16, 32, 32);
+    ctx.drawImage(this.sprite,
+      this.x - FIGHTER_SIZE / 2,
+      this.y - FIGHTER_SIZE / 2,
+      FIGHTER_SIZE,
+      FIGHTER_SIZE);
     if (this.hasCrown) {
       ctx.fillText(crownEmoji, this.x - 8, this.y - 24);
     }
@@ -95,8 +100,9 @@ function spawnFighters() {
     [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
   }
   for (const cls of remaining) {
-    const x = Math.random() * (WIDTH-60) + 30;
-    const y = Math.random() * (HEIGHT-60) + 30;
+    const margin = FIGHTER_SIZE + 12;
+    const x = Math.random() * (WIDTH - margin * 2) + margin;
+    const y = Math.random() * (HEIGHT - margin * 2) + margin;
     fighters.push(new Fighter(nextId++, cls, x, y));
   }
 }
@@ -170,8 +176,9 @@ function aiControl(f, dt) {
 }
 
 function constrain(f) {
-  f.x = Math.max(16, Math.min(WIDTH-16, f.x));
-  f.y = Math.max(16, Math.min(HEIGHT-16, f.y));
+  const half = FIGHTER_SIZE / 2;
+  f.x = Math.max(half, Math.min(WIDTH - half, f.x));
+  f.y = Math.max(half, Math.min(HEIGHT - half, f.y));
 }
 
 function shoot(f, tx = null, ty = null) {
@@ -199,7 +206,7 @@ function updateProjectiles(dt) {
     }
     for (const f of fighters) {
       if (f === p.owner || f.dead) continue;
-      if (Math.hypot(f.x - p.x, f.y - p.y) < 20) {
+      if (Math.hypot(f.x - p.x, f.y - p.y) < FIGHTER_SIZE * 0.625) {
         f.hp -= 1;
         p.active = false;
         if (f.hp <= 0) {
