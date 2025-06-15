@@ -79,6 +79,8 @@ let lastTime = 0;
 let keys = {};
 let playerClass = 'wizard';
 let nextId = 0;
+let mouseX = WIDTH / 2;
+let mouseY = HEIGHT / 2;
 
 function spawnFighters() {
   fighters = [];
@@ -116,7 +118,7 @@ function handleInput(dt) {
   if (keys['a']) player.vx = -speed;
   if (keys['d']) player.vx = speed;
   if (keys[' ']) {
-    shoot(player);
+    shoot(player, mouseX, mouseY);
     keys[' '] = false; // prevent continuous shooting
   }
   player.x += player.vx * dt;
@@ -126,16 +128,30 @@ function handleInput(dt) {
 
 function aiControl(f, dt) {
   if (f.isPlayer || f.dead) return;
-  if (!f.aiTimer || f.aiTimer <= 0) {
-    const angle = Math.random()*Math.PI*2;
-    const speed = 100;
-    f.vx = Math.cos(angle)*speed;
-    f.vy = Math.sin(angle)*speed;
-    f.aiTimer = Math.random()*2+1;
-    // occasionally shoot
-    if (Math.random()<0.3) shoot(f);
+
+  const targets = fighters.filter(t => !t.dead && t !== f);
+  if (targets.length === 0) return;
+
+  // pick nearest living target
+  let target = targets[0];
+  let best = Infinity;
+  for (const t of targets) {
+    const d = Math.hypot(t.x - f.x, t.y - f.y);
+    if (d < best) { best = d; target = t; }
   }
-  f.aiTimer -= dt;
+
+  const angle = Math.atan2(target.y - f.y, target.x - f.x);
+  const speed = 100;
+  f.vx = Math.cos(angle) * speed;
+  f.vy = Math.sin(angle) * speed;
+
+  if (!f.aiShootTimer) f.aiShootTimer = Math.random()*1.5 + 0.5;
+  f.aiShootTimer -= dt;
+  if (f.aiShootTimer <= 0) {
+    shoot(f, target.x, target.y);
+    f.aiShootTimer = Math.random()*1.5 + 0.5;
+  }
+
   f.x += f.vx * dt;
   f.y += f.vy * dt;
   constrain(f);
@@ -146,9 +162,14 @@ function constrain(f) {
   f.y = Math.max(16, Math.min(HEIGHT-16, f.y));
 }
 
-function shoot(f) {
+function shoot(f, tx = null, ty = null) {
   if (f.dead) return;
-  const angle = Math.atan2(f.vy, f.vx) || Math.random()*Math.PI*2;
+  let angle;
+  if (tx !== null && ty !== null) {
+    angle = Math.atan2(ty - f.y, tx - f.x);
+  } else {
+    angle = Math.atan2(f.vy, f.vx) || Math.random()*Math.PI*2;
+  }
   const speed = 200;
   const vx = Math.cos(angle)*speed;
   const vy = Math.sin(angle)*speed;
@@ -205,6 +226,17 @@ function gameLoop(timestamp) {
 
 document.addEventListener('keydown', e=>{ keys[e.key.toLowerCase()] = true; });
 document.addEventListener('keyup', e=>{ keys[e.key.toLowerCase()] = false; });
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  mouseX = e.clientX - rect.left;
+  mouseY = e.clientY - rect.top;
+});
+canvas.addEventListener('mousedown', e => {
+  if (e.button === 0 && running) {
+    const player = fighters[0];
+    shoot(player, mouseX, mouseY);
+  }
+});
 
 startBtn.onclick = () => {
   spawnFighters();
