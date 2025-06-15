@@ -12,6 +12,7 @@ const WIDTH = canvas.width;
 const HEIGHT = canvas.height;
 const FIGHTER_SIZE = 48;
 
+const MIN_SPAWN_DISTANCE = 200;
 const castleEmoji = '🏰';
 const skullEmoji = '💀';
 const crownEmoji = '👑';
@@ -105,18 +106,31 @@ function spawnFighters() {
   projectiles = [];
   nextId = 0;
   playerClass = classSelect.value;
-  fighters.push(new Fighter(nextId++, playerClass, WIDTH/2, HEIGHT/2, true));
-  const classes = ['wizard','demon','knight','archer','monk','axe_thrower'];
+
+  const margin = FIGHTER_SIZE + 12;
+  const randomPos = () => ({
+    x: Math.random() * (WIDTH - margin * 2) + margin,
+    y: Math.random() * (HEIGHT - margin * 2) + margin,
+  });
+
+  fighters.push(new Fighter(nextId++, playerClass, WIDTH / 2, HEIGHT / 2, true));
+  const classes = ['wizard', 'demon', 'knight', 'archer', 'monk', 'axe_thrower'];
   const remaining = classes.filter(c => c !== playerClass);
   for (let i = remaining.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
   }
   for (const cls of remaining) {
-    const margin = FIGHTER_SIZE + 12;
-    const x = Math.random() * (WIDTH - margin * 2) + margin;
-    const y = Math.random() * (HEIGHT - margin * 2) + margin;
-    fighters.push(new Fighter(nextId++, cls, x, y));
+    let pos;
+    let tries = 0;
+    do {
+      pos = randomPos();
+      tries++;
+    } while (
+      fighters.some(f => Math.hypot(f.x - pos.x, f.y - pos.y) < MIN_SPAWN_DISTANCE) &&
+      tries < 50
+    );
+    fighters.push(new Fighter(nextId++, cls, pos.x, pos.y));
   }
 }
 
