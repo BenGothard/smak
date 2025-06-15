@@ -52,6 +52,10 @@ class Fighter {
     this.hasCrown = false;
     this.speed = 0;
     this.maxSpeed = MAX_MOVE_SPEED;
+    this.aiTarget = null;
+    this.aiTargetTimer = 0;
+    this.preferredRange = 250;
+    this.minRange = 120;
   }
 
   draw() {
@@ -185,33 +189,39 @@ function aiControl(f, dt) {
   const living = fighters.filter(t => !t.dead && t !== f);
   if (living.length === 0) return;
 
-  let target = living.find(t => t.isPlayer);
-  if (!target) {
-    let best = Infinity;
-    for (const t of living) {
-      const d = Math.hypot(t.x - f.x, t.y - f.y);
-      if (d < best) { best = d; target = t; }
-    }
+  if (!f.aiTarget || f.aiTarget.dead || f.aiTargetTimer <= 0) {
+    f.aiTarget = living[Math.floor(Math.random() * living.length)];
+    f.aiTargetTimer = Math.random() * 2 + 1; // change target periodically
   }
+  f.aiTargetTimer -= dt;
 
-  const angle = Math.atan2(target.y - f.y, target.x - f.x);
+  const target = f.aiTarget;
+  const dx = target.x - f.x;
+  const dy = target.y - f.y;
+  const dist = Math.hypot(dx, dy);
+  const angle = Math.atan2(dy, dx);
+
   f.speed = Math.min(f.maxSpeed, f.speed + ACCELERATION * dt);
-  let vx = Math.cos(angle) * f.speed;
-  let vy = Math.sin(angle) * f.speed;
-  const dist = Math.hypot(target.x - f.x, target.y - f.y);
-  if (dist < 100) {
-    const strafe = angle + Math.PI/2;
-    vx += Math.cos(strafe) * f.speed * 0.5;
-    vy += Math.sin(strafe) * f.speed * 0.5;
+  let vx, vy;
+  if (dist > f.preferredRange) {
+    vx = Math.cos(angle) * f.speed;
+    vy = Math.sin(angle) * f.speed;
+  } else if (dist < f.minRange) {
+    vx = -Math.cos(angle) * f.speed;
+    vy = -Math.sin(angle) * f.speed;
+  } else {
+    const strafe = angle + Math.PI / 2;
+    vx = Math.cos(strafe) * f.speed;
+    vy = Math.sin(strafe) * f.speed;
   }
   f.vx = vx;
   f.vy = vy;
 
-  if (!f.aiShootTimer) f.aiShootTimer = Math.random()*0.4 + 0.3;
+  if (!f.aiShootTimer) f.aiShootTimer = Math.random() * 0.4 + 0.3;
   f.aiShootTimer -= dt;
   if (f.aiShootTimer <= 0) {
     shoot(f, target.x, target.y);
-    f.aiShootTimer = Math.random()*0.4 + 0.3;
+    f.aiShootTimer = Math.random() * 0.4 + 0.3;
   }
 
   f.x += f.vx * dt;
