@@ -89,9 +89,12 @@ function spawnFighters() {
   playerClass = classSelect.value;
   fighters.push(new Fighter(nextId++, playerClass, WIDTH/2, HEIGHT/2, true));
   const classes = ['wizard','demon','knight','archer','monk','axe_thrower'];
-  // remove player's class from pool to avoid duplicates? but we want all six classes maybe.
-  for (let i = 1; i < 6; i++) {
-    const cls = classes[i % classes.length];
+  const remaining = classes.filter(c => c !== playerClass);
+  for (let i = remaining.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [remaining[i], remaining[j]] = [remaining[j], remaining[i]];
+  }
+  for (const cls of remaining) {
     const x = Math.random() * (WIDTH-60) + 30;
     const y = Math.random() * (HEIGHT-60) + 30;
     fighters.push(new Fighter(nextId++, cls, x, y));
@@ -129,27 +132,36 @@ function handleInput(dt) {
 function aiControl(f, dt) {
   if (f.isPlayer || f.dead) return;
 
-  const targets = fighters.filter(t => !t.dead && t !== f);
-  if (targets.length === 0) return;
+  const living = fighters.filter(t => !t.dead && t !== f);
+  if (living.length === 0) return;
 
-  // pick nearest living target
-  let target = targets[0];
-  let best = Infinity;
-  for (const t of targets) {
-    const d = Math.hypot(t.x - f.x, t.y - f.y);
-    if (d < best) { best = d; target = t; }
+  let target = living.find(t => t.isPlayer);
+  if (!target) {
+    let best = Infinity;
+    for (const t of living) {
+      const d = Math.hypot(t.x - f.x, t.y - f.y);
+      if (d < best) { best = d; target = t; }
+    }
   }
 
   const angle = Math.atan2(target.y - f.y, target.x - f.x);
-  const speed = 100;
-  f.vx = Math.cos(angle) * speed;
-  f.vy = Math.sin(angle) * speed;
+  const speed = 150;
+  let vx = Math.cos(angle) * speed;
+  let vy = Math.sin(angle) * speed;
+  const dist = Math.hypot(target.x - f.x, target.y - f.y);
+  if (dist < 100) {
+    const strafe = angle + Math.PI/2;
+    vx += Math.cos(strafe) * speed * 0.5;
+    vy += Math.sin(strafe) * speed * 0.5;
+  }
+  f.vx = vx;
+  f.vy = vy;
 
-  if (!f.aiShootTimer) f.aiShootTimer = Math.random()*1.5 + 0.5;
+  if (!f.aiShootTimer) f.aiShootTimer = Math.random()*0.4 + 0.3;
   f.aiShootTimer -= dt;
   if (f.aiShootTimer <= 0) {
     shoot(f, target.x, target.y);
-    f.aiShootTimer = Math.random()*1.5 + 0.5;
+    f.aiShootTimer = Math.random()*0.4 + 0.3;
   }
 
   f.x += f.vx * dt;
