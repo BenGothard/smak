@@ -4,6 +4,7 @@ const startBtn = document.getElementById('startBtn');
 const pauseBtn = document.getElementById('pauseBtn');
 const restartBtn = document.getElementById('restartBtn');
 const classSelect = document.getElementById('classSelect');
+const classPreview = document.getElementById('classPreview');
 const resultModal = document.getElementById('resultModal');
 const resultText = document.getElementById('resultText');
 const modalRestartBtn = document.getElementById('modalRestartBtn');
@@ -35,6 +36,12 @@ const sprites = {
   monk: 'images/monk.png',
   axe_thrower: 'images/axe_thrower.png'
 };
+
+function updateClassPreview() {
+  classPreview.src = sprites[classSelect.value];
+}
+classSelect.addEventListener('change', updateClassPreview);
+updateClassPreview();
 
 
 class Fighter {
