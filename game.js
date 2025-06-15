@@ -28,6 +28,11 @@ const projectileEmojis = {
   axe_thrower: '🪓'
 };
 
+const obstacleEmoji = '🧱';
+const heartEmoji = '❤️';
+const OBSTACLE_RADIUS = 24;
+const HEART_RADIUS = 20;
+
 const sprites = {
   wizard: 'images/wizard.png',
   demon: 'images/demon.png',
@@ -59,7 +64,7 @@ class Fighter {
     this.dead = false;
     this.hasCrown = false;
     this.speed = 0;
-    this.maxSpeed = MAX_MOVE_SPEED;
+    this.maxSpeed = isPlayer ? MAX_MOVE_SPEED : MAX_MOVE_SPEED * 1.2;
     this.aiTarget = null;
     this.aiTargetTimer = 0;
     this.preferredRange = 250;
@@ -99,6 +104,8 @@ class Projectile {
 
 let fighters = [];
 let projectiles = [];
+let obstacles = [];
+let hearts = [];
 let running = false;
 let lastTime = 0;
 let keys = {};
@@ -153,6 +160,36 @@ function spawnFighters() {
     );
     fighters.push(new Fighter(nextId++, cls, pos.x, pos.y));
   }
+
+  spawnObstacles();
+  spawnHearts();
+}
+
+function spawnObstacles() {
+  obstacles = [];
+  const count = 6;
+  const margin = OBSTACLE_RADIUS + 20;
+  for (let i = 0; i < count; i++) {
+    obstacles.push({
+      x: Math.random() * (WIDTH - margin * 2) + margin,
+      y: Math.random() * (HEIGHT - margin * 2) + margin,
+      r: OBSTACLE_RADIUS
+    });
+  }
+}
+
+function spawnHearts() {
+  hearts = [];
+  const count = 3;
+  const margin = HEART_RADIUS + 20;
+  for (let i = 0; i < count; i++) {
+    hearts.push({
+      x: Math.random() * (WIDTH - margin * 2) + margin,
+      y: Math.random() * (HEIGHT - margin * 2) + margin,
+      r: HEART_RADIUS,
+      active: true
+    });
+  }
 }
 
 function drawBoard() {
@@ -163,6 +200,18 @@ function drawBoard() {
   ctx.fillText(castleEmoji, WIDTH-30, 25);
   ctx.fillText(castleEmoji, 5, HEIGHT-5);
   ctx.fillText(castleEmoji, WIDTH-30, HEIGHT-5);
+}
+
+function drawObstacles() {
+  for (const o of obstacles) {
+    ctx.fillText(obstacleEmoji, o.x, o.y);
+  }
+}
+
+function drawHearts() {
+  for (const h of hearts) {
+    if (h.active) ctx.fillText(heartEmoji, h.x, h.y);
+  }
 }
 
 function handleInput(dt) {
@@ -194,6 +243,7 @@ function handleInput(dt) {
   player.x += player.vx * dt;
   player.y += player.vy * dt;
   constrain(player);
+  checkHeartCollision(player);
 }
 
 function aiControl(f, dt) {
@@ -230,22 +280,34 @@ function aiControl(f, dt) {
   f.vx = vx;
   f.vy = vy;
 
-  if (!f.aiShootTimer) f.aiShootTimer = Math.random() * 0.4 + 0.3;
+  if (!f.aiShootTimer) f.aiShootTimer = Math.random() * 0.3 + 0.2;
   f.aiShootTimer -= dt;
   if (f.aiShootTimer <= 0) {
     shoot(f, target.x, target.y);
-    f.aiShootTimer = Math.random() * 0.4 + 0.3;
+    f.aiShootTimer = Math.random() * 0.3 + 0.2;
   }
 
   f.x += f.vx * dt;
   f.y += f.vy * dt;
   constrain(f);
+  checkHeartCollision(f);
 }
 
 function constrain(f) {
   const half = FIGHTER_SIZE / 2;
   f.x = Math.max(half, Math.min(WIDTH - half, f.x));
   f.y = Math.max(half, Math.min(HEIGHT - half, f.y));
+}
+
+function checkHeartCollision(f) {
+  for (const h of hearts) {
+    if (!h.active) continue;
+    if (Math.hypot(f.x - h.x, f.y - h.y) < HEART_RADIUS + FIGHTER_SIZE / 2) {
+      if (f.hp < 10) f.hp += 1;
+      h.active = false;
+    }
+  }
+  hearts = hearts.filter(h => h.active);
 }
 
 function shoot(f, tx = null, ty = null) {
@@ -271,6 +333,13 @@ function updateProjectiles(dt) {
       p.active = false;
       continue;
     }
+    for (const o of obstacles) {
+      if (Math.hypot(o.x - p.x, o.y - p.y) < o.r) {
+        p.active = false;
+        break;
+      }
+    }
+    if (!p.active) continue;
     for (const f of fighters) {
       if (f === p.owner || f.dead) continue;
       if (Math.hypot(f.x - p.x, f.y - p.y) < FIGHTER_SIZE * 0.625) {
@@ -302,6 +371,8 @@ function gameLoop(timestamp) {
   const dt = (timestamp - lastTime)/1000;
   lastTime = timestamp;
   drawBoard();
+  drawObstacles();
+  drawHearts();
   handleInput(dt);
   for (let i=1;i<fighters.length;i++) aiControl(fighters[i], dt);
   updateProjectiles(dt);

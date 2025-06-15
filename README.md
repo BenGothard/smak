@@ -8,4 +8,5 @@ Choose one of six medieval fantasy classes and battle five AI opponents.
 
 Open `index.html` in any modern web browser. Use **WASD** to move and
 aim with the mouse cursor. Fire using **spacebar** or **left click**.
+Avoid 🧱 obstacles and run over ❤️ hearts to regain health.
 The **Start**, **Pause**, and **Restart** buttons control the game.
