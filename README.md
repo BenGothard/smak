@@ -1,4 +1,5 @@
-# Castle Deathmatch
+# Smak
+The ultimate projectile deathmatch
 
 This repository contains a simple browser-based free-for-all arena game.
 Choose one of six medieval fantasy classes and battle five AI opponents.

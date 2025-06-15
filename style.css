@@ -19,6 +19,13 @@ body {
   text-shadow: 0 0 10px #000;
 }
 
+#subtitle {
+  font-size: 24px;
+  margin-top: -10px;
+  margin-bottom: 30px;
+  text-shadow: 0 0 5px #000;
+}
+
 #menu {
   background: rgba(0, 0, 0, 0.7);
   padding: 15px 20px;
