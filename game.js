@@ -4,6 +4,9 @@ const startBtn = document.getElementById('startBtn');
 const pauseBtn = document.getElementById('pauseBtn');
 const restartBtn = document.getElementById('restartBtn');
 const classSelect = document.getElementById('classSelect');
+const resultModal = document.getElementById('resultModal');
+const resultText = document.getElementById('resultText');
+const modalRestartBtn = document.getElementById('modalRestartBtn');
 
 const WIDTH = canvas.width;
 const HEIGHT = canvas.height;
@@ -86,6 +89,16 @@ let playerClass = 'wizard';
 let nextId = 0;
 let mouseX = WIDTH / 2;
 let mouseY = HEIGHT / 2;
+
+function showResults(winner) {
+  const msg = winner.isPlayer ? 'You are victorious!' : `${winner.cls} wins!`;
+  resultText.textContent = msg;
+  resultModal.style.display = 'flex';
+}
+
+function hideResults() {
+  resultModal.style.display = 'none';
+}
 
 function spawnFighters() {
   fighters = [];
@@ -226,6 +239,7 @@ function checkWinner() {
     winner.hasCrown = true;
     running = false;
     pauseBtn.textContent = 'Play';
+    showResults(winner);
   }
 }
 
@@ -263,6 +277,7 @@ startBtn.onclick = () => {
   startBtn.disabled = true;
   pauseBtn.disabled = false;
   restartBtn.disabled = false;
+  hideResults();
 };
 
 pauseBtn.onclick = () => {
@@ -274,6 +289,17 @@ restartBtn.onclick = () => {
   spawnFighters();
   running = true;
   pauseBtn.textContent = 'Pause';
+  hideResults();
+};
+
+modalRestartBtn.onclick = () => {
+  spawnFighters();
+  running = true;
+  pauseBtn.textContent = 'Pause';
+  startBtn.disabled = true;
+  pauseBtn.disabled = false;
+  restartBtn.disabled = false;
+  hideResults();
 };
 
 requestAnimationFrame(gameLoop);
