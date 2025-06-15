@@ -88,3 +88,16 @@ button:disabled {
   border-radius: 8px;
   box-shadow: 0 0 10px #000;
 }
+
+#resultText {
+  font-size: 32px;
+  margin-bottom: 20px;
+}
+
+.win-text {
+  color: #d4af37;
+}
+
+.lose-text {
+  color: #f44336;
+}

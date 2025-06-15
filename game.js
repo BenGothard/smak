@@ -100,13 +100,18 @@ let mouseX = WIDTH / 2;
 let mouseY = HEIGHT / 2;
 
 function showResults(winner) {
-  const msg = winner.isPlayer ? 'You are victorious!' : `${winner.cls} wins!`;
+  const playerWon = winner.isPlayer;
+  const msg = playerWon
+    ? 'You are victorious!'
+    : `Defeat! You were slain by ${winner.cls}.`;
   resultText.textContent = msg;
+  resultText.className = playerWon ? 'win-text' : 'lose-text';
   resultModal.style.display = 'flex';
 }
 
 function hideResults() {
   resultModal.style.display = 'none';
+  resultText.className = '';
 }
 
 function spawnFighters() {
